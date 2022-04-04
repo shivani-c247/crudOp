@@ -1,9 +1,9 @@
 const Category = require("../models/Category");
-const { validationResult } = require('express-validator');
-const { upload } = require('../helpers/helper');
+const { validationResult } = require("express-validator");
+const { upload } = require("../helpers/helper");
 
 /**
- * @api {get} /category/:id Request Category 
+ * @api {get} /category/:id Request Category
  * @apiName GetCategory
  * @apiGroup Category
  *
@@ -13,8 +13,8 @@ const { upload } = require('../helpers/helper');
  * @apiSuccess {String}  subCategories subCategories of the product.
  * @apiSuccess {Onject} categoryImages categoryImages of the product.
  * @apiSuccess {Number} price price of the product.
- * 
- * 
+ *
+ *
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
@@ -22,7 +22,7 @@ const { upload } = require('../helpers/helper');
  *       "subCategories": "sarees"
  *        "categoryImages":"productImages"
  *        "price":"price"
- *        
+ *
  *     }
  *
  * @apiError CategoryNotFound The id of the User was not found.
@@ -32,7 +32,7 @@ const { upload } = require('../helpers/helper');
  *     {
  *       "error": "CategoryNotFound"
  *     }
- * 
+ *
  */
 
 exports.insertCategory = async (req, res, next) => {
@@ -43,42 +43,49 @@ exports.insertCategory = async (req, res, next) => {
       return;
     }
     let imagesArray = [];
-    req.files.forEach(element => {
+    req.files.forEach((element) => {
       const file = {
         imageName: element.originalname,
         imagePath: element.path,
         imageType: element.mimetype,
-        fileSize: fileSizeFormatter(element.size, 2)
-      }
+        fileSize: fileSizeFormatter(element.size, 2),
+      };
       imagesArray.push(file);
     });
-    const categoryData = new Category({
-      categoryName: req.body.categoryName,
-      subCategories: req.body.subCategories,
+    const { categoryName, subCategories, categoryImages } = req.body;
+    const categoryData = await Category.create({
+      categoryName,
+      subCategories,
       categoryImages: imagesArray,
-      price: req.body.price,
     });
-    await categoryData.save();
-    res.status(201).send({
-      status:true,
-      massage:'Category saved and images Uploaded Successfully',
-      data:categoryData,
+
+    return res.status(200).json({
+      success: true,
+      message: "Data saved successfully.",
+      data: categoryData,
     });
   } catch (error) {
-    res.status(400).send(error.message);
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message:
+        "We are having some error while completing your request. Please try again after some time.",
+      error: error,
+    });
   }
-}
+};
 
 const fileSizeFormatter = (bytes, decimal) => {
   if (bytes === 0) {
-    return '0 Bytes';
+    return "0 Bytes";
   }
   const dm = decimal || 2;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'YB', 'ZB'];
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "YB", "ZB"];
   const index = Math.floor(Math.log(bytes) / Math.log(1000));
-  return parseFloat((bytes / Math.pow(1000, index)).toFixed(dm)) + ' ' + sizes[index];
-
-}
+  return (
+    parseFloat((bytes / Math.pow(1000, index)).toFixed(dm)) + " " + sizes[index]
+  );
+};
 
 /**
  * @api {put} /Category/ Modify Category information
@@ -97,10 +104,13 @@ const fileSizeFormatter = (bytes, decimal) => {
  * @apiUse CategoryNotFoundError
  */
 
-//update data
 exports.update = async (req, res) => {
   try {
-    
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(422).json({ errors: errors.array() });
+      return;
+    }
     const updatedCartegory = await Category.findByIdAndUpdate(
       req.params.id,
       {
@@ -114,7 +124,6 @@ exports.update = async (req, res) => {
   }
 };
 
-
 /**
  * @api {get} /Category/:id Get User information .
  * @apiVersion 0.2.0
@@ -125,7 +134,7 @@ exports.update = async (req, res) => {
  *
  * @apiSuccess {String} categoryName  CategoryName of the Product.
  * @apiSuccess {String} sunCategories   subCategories of the Product.
- * 
+ *
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
@@ -142,44 +151,25 @@ exports.update = async (req, res) => {
  *     }
  */
 
-
-//find one
 exports.getOne = async (req, res) => {
   try {
-    const categoryData = await Category.findById(req.params.id)
-    .select('categoryName subCategories categoryImages price ')
-    res.status(200).json(categoryData)
-
-  } catch (err) {
-    res.status(500).json(err);
-  }
-};
-//countAllData
-exports.countAllCategories = async (req, res) => {
-  try {
-    const count = await Category.find()
-    .count()
-    res.status(200).json({
-      status :true,
-      message:`total no. of data presented $count`,
-      TotalCategories:count})
-
+    const categoryData = await Category.findById(req.params.id).select(
+      "categoryName subCategories categoryImages slug "
+    );
+    res.status(200).json(categoryData);
   } catch (err) {
     res.status(500).json(err);
   }
 };
 
-
-//search by condition
 exports.SearchByCondition = (req, res, next) => {
   const searchData = req.query.categoryName;
-  Category.find({ categoryName: { $regex: searchData, $options: '$a' } })
-    .then(data => {
+  Category.find({ categoryName: { $regex: searchData, $options: "$a" } }).then(
+    (data) => {
       res.send(data);
-    })
-}
-
-
+    }
+  );
+};
 
 /**
  * @apiDefine CategoryNotFoundError
@@ -213,22 +203,16 @@ exports.SearchByCondition = (req, res, next) => {
  * @apiUse CategoryNotFoundError
  */
 
-//get all data
 exports.getAll = async (req, res) => {
   try {
-    
-    const { page , perpage } = req.query;
-    const options={
-      page:parseInt(page,10) ||1,
-      limit:parseInt(perpage,10) ||10,
-    }
-    const category = await Category.paginate({},options)
-      //.limit(limit * 1)
-      //.skip((page - 1) * limit)
-      //.select('categoryName subCategories categoryImages price ')
-      //.sort("categoryName")
-  res.status(200).json({ total: category.length, category });
-
+    const { page, perpage } = req.query;
+    const options = {
+      page: parseInt(page, 10) || 1,
+      limit: parseInt(perpage, 10) || 10,
+      sort: { createdAt: "desc" },
+    };
+    const category = await Category.paginate({}, options);
+    res.status(200).json(category);
   } catch (err) {
     res.status(500).json(err);
   }

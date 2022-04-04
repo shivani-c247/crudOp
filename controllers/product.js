@@ -87,7 +87,14 @@ exports.insertProduct=  async (req, res, next) => {
   }
 // update product
 exports.updateProduct= async (req, res) => {
+  
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(422).json({ errors: errors.array() });
+        return;
+      }
+
       const updatedProduct = await Product.findByIdAndUpdate(
         req.params.id,
         {

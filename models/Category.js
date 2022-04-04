@@ -1,29 +1,23 @@
 const mongoose = require("mongoose");
 var URLSlug = require("mongoose-slug-generator");
-const mongoosePaginate =require("mongoose-paginate")
 mongoose.plugin(URLSlug);
-const categorySchema = new mongoose.Schema({
-      categoryName: {
-      type: String,
+const mongoosePaginate = require("mongoose-paginate");
+
+const categorySchema = new mongoose.Schema(
+  {
+    categoryName: { type: String, required: true },
+    subCategories: {
+      type: Array,
       required: true,
-      
     },
-      subCategories:{
-        type:Array,
-        required:true,
-      },
     categoryImages: [Object],
-    price:{
-      type:Array,
-    },
-    slug: { type: String, slug: "categoryName"}
+    slug: { type: String, slug: "categoryName", unique: true },
   },
   { timestamps: true }
 );
-categorySchema.pre("save", function(next) {
+categorySchema.pre("save", function (next) {
   this.slug = this.categoryName.split(" ").join("-");
   next();
 });
 categorySchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("Category", categorySchema);
-
