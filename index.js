@@ -8,6 +8,10 @@ const expressValidator = require("express-validator");
 const bodyparser = require("body-parser");
 const path = require("path");
 
+app.use(bodyparser.json());
+app.use(bodyparser.urlencoded({ extended: true }));
+
+
 mongoose
   .connect("mongodb://localhost:27017/Crude", {
     //useCreatIndex:true,

@@ -162,15 +162,6 @@ exports.getOne = async (req, res) => {
   }
 };
 
-exports.SearchByCondition = (req, res, next) => {
-  const searchData = req.query.categoryName;
-  Category.find({ categoryName: { $regex: searchData, $options: "$a" } }).then(
-    (data) => {
-      res.send(data);
-    }
-  );
-};
-
 /**
  * @apiDefine CategoryNotFoundError
  *
@@ -205,18 +196,22 @@ exports.SearchByCondition = (req, res, next) => {
 
 exports.getAll = async (req, res) => {
   try {
-    const { page, perpage } = req.query;
+    const { page, perpage, categoryName } = req.query;
     const options = {
       page: parseInt(page, 10) || 1,
       limit: parseInt(perpage, 10) || 10,
-      sort: { createdAt: "desc" },
+      sort: { categoryName: 1 },
     };
-    const category = await Category.paginate({}, options);
+    const category = await Category.paginate(
+      { categoryName: { $regex: new RegExp(categoryName), $options: "i" } },
+      options
+    );
     res.status(200).json(category);
   } catch (err) {
     res.status(500).json(err);
   }
 };
+
 //delete data
 exports.delete = async (req, res) => {
   try {

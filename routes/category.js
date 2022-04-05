@@ -15,7 +15,6 @@ router.put(
   categoryController.update
 );
 router.get("/", categoryController.getAll);
-router.get("/condition", categoryController.SearchByCondition);
 router.get("/:id", categoryController.getOne);
 router.delete("/:id", categoryController.delete);
 
