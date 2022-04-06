@@ -5,7 +5,7 @@ const mongoosePaginate = require("mongoose-paginate");
 
 const categorySchema = new mongoose.Schema(
   {
-    categoryName: { type: String, required: true },
+    categoryName: { type: String, required: true, unique: true },
     subCategories: {
       type: Array,
       required: true,

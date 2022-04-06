@@ -118,10 +118,11 @@ exports.updateProduct = async (req, res) => {
 // get all products
 exports.AllProduct = async (req, res) => {
   try {
-    const { page, perpage, title } = req.query;
+    const { page, perpage, title, color } = req.query;
     const options = {
       page: parseInt(page, 10) || 1,
       limit: parseInt(perpage, 10) || 10,
+      sort: { title: 1 },
     };
     const products = await Product.paginate(
       { title: { $regex: new RegExp(title), $options: "i" } },
@@ -175,6 +176,9 @@ exports.getOneData = async (req, res) => {
     const productGet = await Product.findById(req.params.id)
       .populate("categories")
       .select("title desc images categories size color price slug");
+    if (!productGet) {
+      return res.status(400).json({ error: "product not found" });
+    }
     res.status(200).json(productGet);
   } catch (err) {
     res.status(500).json(err);
@@ -188,7 +192,10 @@ exports.deleteData = async (req, res) => {
     if (!product) {
       return res.status(400).json({ error: "product not found" });
     }
-    res.status(200).json(product);
+    res.status(200).json({
+      message: "product deleted ",
+      data: product,
+    });
   } catch (err) {
     res.status(500).json(err);
   }

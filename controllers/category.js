@@ -21,7 +21,7 @@ const { upload } = require("../helpers/helper");
  *       "categoryName": "women Ethics",
  *       "subCategories": "sarees"
  *        "categoryImages":"productImages"
- *        
+ *
  *
  *     }
  *
@@ -96,14 +96,14 @@ const fileSizeFormatter = (bytes, decimal) => {
  * @apiParam {String} [categoryName] categoryName of the User.
  * @apiParam {String} [subCategories]  subCategories of the User.
  *
- * 
+ *
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
  *        "id":""
  *       "categoryName": "women Ethics",
  *       "subCategories": "sarees"
- *        
+ *
  *
  *     }
  * @apiUse categoryNotFoundError
@@ -123,9 +123,13 @@ exports.update = async (req, res) => {
       },
       { new: true }
     );
+    if (!updatedCartegory) {
+      return res.status(400).json({ error: "category not found" });
+    }
     res.status(200).json({
-      message:"category updated succesfully",
-      data:updatedCartegory});
+      message: "category updated succesfully",
+      data: updatedCartegory,
+    });
   } catch (err) {
     res.status(500).json(err);
   }

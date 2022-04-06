@@ -8,13 +8,13 @@ const ProductSchema = new mongoose.Schema(
     desc: { type: String, required: true },
     images: [Object],
     categories: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
-    size: { type: String },
+    size: { type: String, enum: ["m", "s", "XL", "L", "XXL"] },
     color: {
       type: String,
       enum: ["pink", "red", "yellow", "blue", "green"],
       required: true,
     },
-    price: { type: Number},
+    price: { type: Number },
     slug: { type: String, slug: "title", unique: true },
   },
   { timestamps: true }
