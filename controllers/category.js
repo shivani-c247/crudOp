@@ -11,7 +11,7 @@ const { upload } = require("../helpers/helper");
  *
  * @apiSuccess {String} categoryName CategoryName of the product.
  * @apiSuccess {String}  subCategories subCategories of the product.
- * @apiSuccess {Onject} categoryImages categoryImages of the product.
+ * @apiSuccess {Object} categoryImages categoryImages of the product.
  * @apiSuccess {Number} price price of the product.
  *
  *
@@ -21,7 +21,7 @@ const { upload } = require("../helpers/helper");
  *       "categoryName": "women Ethics",
  *       "subCategories": "sarees"
  *        "categoryImages":"productImages"
- *        "price":"price"
+ *        
  *
  *     }
  *
@@ -88,20 +88,25 @@ const fileSizeFormatter = (bytes, decimal) => {
 };
 
 /**
- * @api {put} /Category/ Modify Category information
+ * @api {put} /category/ Modify Category information
  * @apiName PutCategory
  * @apiGroup Category
  *
- * @apiParam {Number} id  Category unique ID.
- * @apiParam {String} [categoryName] categoryName of the product.
- * @apiParam {String} [subategories]  subCategories of the product.
+ * @apiParam {Number} id          Category unique ID.
+ * @apiParam {String} [categoryName] categoryName of the User.
+ * @apiParam {String} [subCategories]  subCategories of the User.
  *
- * @apiParam {Object} [categoryImages]  CategoryImages of the product.
- *
+ * 
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
+ *     {
+ *        "id":""
+ *       "categoryName": "women Ethics",
+ *       "subCategories": "sarees"
+ *        
  *
- * @apiUse CategoryNotFoundError
+ *     }
+ * @apiUse categoryNotFoundError
  */
 
 exports.update = async (req, res) => {
@@ -118,7 +123,9 @@ exports.update = async (req, res) => {
       },
       { new: true }
     );
-    res.status(200).json(updatedCartegory);
+    res.status(200).json({
+      message:"category updated succesfully",
+      data:updatedCartegory});
   } catch (err) {
     res.status(500).json(err);
   }
@@ -156,6 +163,9 @@ exports.getOne = async (req, res) => {
     const categoryData = await Category.findById(req.params.id).select(
       "categoryName subCategories categoryImages slug "
     );
+    if (!categoryData) {
+      return res.status(400).json({ error: "category not found" });
+    }
     res.status(200).json(categoryData);
   } catch (err) {
     res.status(500).json(err);
@@ -163,37 +173,31 @@ exports.getOne = async (req, res) => {
 };
 
 /**
- * @apiDefine CategoryNotFoundError
+ * @api {get} /category/: Get User information
+ * @apiVersion 0.2.0
+ * @apiName Getcategory
+ * @apiGroup category
  *
- * @apiError CategoryNotFound The id of the User was not found.
- *
- * @apiErrorExample Error-Response:
- *     HTTP/1.1 404 Not Found
- *     {
- *       "error": "CategoryNotFound"
- *     }
- */
-
-/**
- * @api {get} /Category/:id Request Category information
- * @apiName GetCategory
- * @apiGroup Category
- *
- * @apiParam {Number} id product unique ID.
- *
- * @apiSuccess {String} CategoryName CategoryName of the Product.
- * @apiSuccess {String} subcategories  subcategories of the User.
+ * @apiSuccess {String} categoryName  categoryName of the product.
+ * @apiSuccess {String} subCategories   subCategories of the product.
+ * @apiSuccess {Object}  categoryImages categoryImages of the product.
  *
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
- *       "categoryName": "women Ethic",
- *       "subCategories": "suites"
+ *       "categoryName": "home applience",
+ *       "sunCategories": "spoon"
  *     }
  *
- * @apiUse CategoryNotFoundError
+ *  @api {get} /category/: search category by name
+ *  @apiSuccess {String} categoryName  categoryName of the product.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ *     {
+ *       "error": "UserNotFound"
+ *     }
  */
-
 exports.getAll = async (req, res) => {
   try {
     const { page, perpage, categoryName } = req.query;
@@ -216,7 +220,13 @@ exports.getAll = async (req, res) => {
 exports.delete = async (req, res) => {
   try {
     const category = await Category.findByIdAndDelete(req.params.id);
-    res.status(200).json(category);
+    if (!category) {
+      return res.status(400).json({ error: "category not found" });
+    }
+    res.status(200).json({
+      message: "Category deleted successfully",
+      data: category,
+    });
   } catch (err) {
     res.status(500).json(err);
   }

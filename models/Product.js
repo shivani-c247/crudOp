@@ -14,8 +14,8 @@ const ProductSchema = new mongoose.Schema(
       enum: ["pink", "red", "yellow", "blue", "green"],
       required: true,
     },
-    price: { type: Number, required: [true, "please fill price"] },
-    slug: { type: String, slug: "title" },
+    price: { type: Number},
+    slug: { type: String, slug: "title", unique: true },
   },
   { timestamps: true }
 );
