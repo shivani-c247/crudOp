@@ -1,6 +1,6 @@
 const Product = require("../models/product");
 const { validationResult } = require("express-validator");
-const Category = require("../models/Category");
+//const Category = require("../models/Category");
 
 /**
  * @api {get} /product/:id Request product
@@ -92,7 +92,34 @@ const fileSizeFormatter = (bytes, decimal) => {
     parseFloat((bytes / Math.pow(1000, index)).toFixed(dm)) + " " + sizes[index]
   );
 };
-// update product
+
+/**
+ * @api {put} /api/products/:id Update a product
+ * @apiName PutProduct
+ * @apiGroup Products
+ *
+ * @apiParam {Number} id          product unique ID.
+ *
+ * @apiSuccess {String} [title] title of the product.
+ * @apiSuccess {String}  [desc] desciption of the product.
+ * @apiSuccess {Number} ]price] price of the product.
+ * @apiSuccess {ObjectId} [categories] categories of the product.
+ * @apiSuccess {String} [size] size of the product.
+ * @apiSuccess {Number} [color] color of the product.
+ *
+ * @apiSuccessExample Success-Response:
+ *       HTTP/1.1 200 OK
+ *     {
+ *       "title": "woments collections",
+ *       "desc": "description"
+ *        "price":"5000"
+ *        "categories":"objectId"
+ *        "size":L
+ *         "color":pink
+ *     }
+ * @apiUse categoryNotFoundError
+ */
+
 exports.updateProduct = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -118,7 +145,7 @@ exports.updateProduct = async (req, res) => {
 // get all products
 exports.AllProduct = async (req, res) => {
   try {
-    const { page, perpage, title, color } = req.query;
+    const { page, perpage, title, per } = req.query;
     const options = {
       page: parseInt(page, 10) || 1,
       limit: parseInt(perpage, 10) || 10,
@@ -128,7 +155,7 @@ exports.AllProduct = async (req, res) => {
       { title: { $regex: new RegExp(title), $options: "i" } },
       options
     );
-    res.status(200).json(products);
+    res.status(200).json({ products });
   } catch (err) {
     res.status(500).json(err);
   }
@@ -141,7 +168,6 @@ exports.AllProduct = async (req, res) => {
  * @apiGroup Product
  *
  * @apiParam {Number} id product unique ID.
- *
  * @apiSuccess {String} title  title of the Product.
  * @apiSuccess {String} desc   description of the Product.
  * @apiSuccess {Object} productImages productImages of the product.
@@ -185,7 +211,23 @@ exports.getOneData = async (req, res) => {
   }
 };
 
-//delete data
+/**
+    * @api {delete} /api/products/:id Delete a products
+    * @apiVersion 1.0.0
+    * @apiName Delete
+    * @apiGroup product
+    *
+    * @apiParam {String} id The product id
+    * @apiSuccess {String} message product deleted successfully!
+    *
+    * @apiSuccessExample {json} Success response:
+     *     HTTPS 200 OK
+     *     {
+     *      "message": "product deleted successfully!"
+     *    }
+     *
+     
+    */
 exports.deleteData = async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);

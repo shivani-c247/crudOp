@@ -1,9 +1,10 @@
 const Category = require("../models/Category");
 const { validationResult } = require("express-validator");
+//const product =require("../models/Product");
 const { upload } = require("../helpers/helper");
-
+const Product = require("../models/product");
 /**
- * @api {get} /category/:id Request Category
+ * @api {get} api/category/ create a  Category
  * @apiName GetCategory
  * @apiGroup Category
  *
@@ -88,13 +89,13 @@ const fileSizeFormatter = (bytes, decimal) => {
 };
 
 /**
- * @api {put} /category/ Modify Category information
+ * @api {put} /api/category/:id Update a category
  * @apiName PutCategory
  * @apiGroup Category
  *
  * @apiParam {Number} id          Category unique ID.
- * @apiParam {String} [categoryName] categoryName of the User.
- * @apiParam {String} [subCategories]  subCategories of the User.
+ * @apiParam {String} [categoryName] categoryName of the product.
+ * @apiParam {String} [subCategories]  subCategories of the product.
  *
  *
  * @apiSuccessExample Success-Response:
@@ -103,8 +104,6 @@ const fileSizeFormatter = (bytes, decimal) => {
  *        "id":""
  *       "categoryName": "women Ethics",
  *       "subCategories": "sarees"
- *
- *
  *     }
  * @apiUse categoryNotFoundError
  */
@@ -177,7 +176,7 @@ exports.getOne = async (req, res) => {
 };
 
 /**
- * @api {get} /category/: Get User information
+ * @api {get} /category/: Get Category information
  * @apiVersion 0.2.0
  * @apiName Getcategory
  * @apiGroup category
@@ -199,7 +198,7 @@ exports.getOne = async (req, res) => {
  * @apiErrorExample Error-Response:
  *     HTTP/1.1 404 Not Found
  *     {
- *       "error": "UserNotFound"
+ *       "error": categoryNameNotFound"
  *     }
  */
 exports.getAll = async (req, res) => {
@@ -214,23 +213,48 @@ exports.getAll = async (req, res) => {
       { categoryName: { $regex: new RegExp(categoryName), $options: "i" } },
       options
     );
-    res.status(200).json(category);
+    res.status(200).json({ category });
   } catch (err) {
     res.status(500).json(err);
   }
 };
 
-//delete data
+/**
+    * @api {delete} /api/category/:id Delete a category
+    * @apiVersion 1.0.0
+    * @apiName Delete
+    * @apiGroup category
+    *
+    * @apiParam {String} id The category id
+    * @apiSuccess {String} message Category deleted successfully!
+    *
+    * 
+    * @apiErrorExample Error-Response:
+    *     HTTP/1.1 400 not found
+    *     {
+    *       "error": CategoryNotFound"
+    *     }
+
+    * @apiSuccessExample {json} Success response:
+     *     HTTPS 200 OK
+     *     {
+     *      "message": "Category deleted successfully!"
+     *    }
+     *
+    */
 exports.delete = async (req, res) => {
   try {
-    const category = await Category.findByIdAndDelete(req.params.id);
-    if (!category) {
-      return res.status(400).json({ error: "category not found" });
+    const { id } = req.params;
+    const productData = await Product.countDocuments({ categories: id });
+    if (productData > 0) {
+      res.status(400).json("not able to delete, category already present");
+    } else {
+      const category = await Category.findByIdAndDelete(req.params.id);
+      res.status(200).json({
+        message: "Category deleted successfully",
+        data: category,
+      });
     }
-    res.status(200).json({
-      message: "Category deleted successfully",
-      data: category,
-    });
   } catch (err) {
     res.status(500).json(err);
   }

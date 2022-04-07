@@ -3,6 +3,8 @@ const app = express();
 const mongoose = require("mongoose");
 const productRoute = require("./routes/product");
 const categoryRoute = require("./routes/category");
+const cartRoute = require("./routes/cart");
+
 const expressValidator = require("express-validator");
 //app.use(expressValidator())
 const bodyparser = require("body-parser");
@@ -28,6 +30,7 @@ mongoose
 app.use(express.json());
 app.use("/api/products", productRoute);
 app.use("/api/category", categoryRoute);
+app.use("/api/cart", cartRoute);
 
 app.listen(process.env.PORT || 8000, () => {
   console.log(" server is running at port 8000");
