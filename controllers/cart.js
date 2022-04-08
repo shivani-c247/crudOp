@@ -29,7 +29,10 @@ exports.getOne = async (req, res) => {
   try {
     const cart = await Cart.findById(req.params.id)
       .select("products")
-      .populate("productItems");
+      .populate(
+        "productItems",
+        "title desc images categories size color price"
+      );
     if (!cart) {
       return res.status(400).json({ error: " Cart not found...... " });
     }
