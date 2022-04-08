@@ -61,3 +61,33 @@ exports.ProductUpdatevalidate = (method) => {
     }
   }
 };
+
+exports.Ordertvalidate = (method) => {
+  switch (method) {
+    case "createOrder": {
+      return [
+        body("address.*.fullAddress")
+          .not()
+          .isEmpty()
+          .withMessage(" fullAddress is required.."),
+        body("address.*.city").not().isEmpty().withMessage("city is required"),
+        body("address.*.pinCode")
+          .not()
+          .isEmpty()
+          .withMessage("pinCode is required")
+          .isLength({ min: 6 })
+          .withMessage("min 6 no."),
+        body("contactNo")
+          .not()
+          .isEmpty()
+          .withMessage("contactNo is required")
+          .isLength({ min: 10 })
+          .withMessage(" min. length required 10"),
+        body("totalAmount")
+          .not()
+          .isEmpty()
+          .withMessage("totalAmount is required"),
+      ];
+    }
+  }
+};
