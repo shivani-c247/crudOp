@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 var URLSlug = require("mongoose-slug-generator");
 mongoose.plugin(URLSlug);
-const mongoosePaginate = require("mongoose-paginate");
+const mongoosePaginate = require("mongoose-paginate-v2");
 
 const categorySchema = new mongoose.Schema(
   {

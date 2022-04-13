@@ -34,7 +34,7 @@ exports.getOne = async (req, res) => {
         "title desc images categories size color price"
       );
     if (!cart) {
-      return res.status(400).json({ error: " Cart not found...... " });
+      return res.status(400).json({ error: " Cart is Empty...... " });
     }
     res.status(200).json({
       status: true,

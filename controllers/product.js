@@ -1,5 +1,6 @@
 const Product = require("../models/product");
 const { validationResult } = require("express-validator");
+const { fileSizeFormatter } = require("../utils/helper")
 //const Category = require("../models/Category");
 
 /**
@@ -44,7 +45,7 @@ exports.insertProduct = async (req, res, next) => {
     if (!errors.isEmpty()) {
       res.status(422).json({ errors: errors.array() });
       return;
-    }
+    } 
     let imagesArray = [];
     req.files.forEach((element) => {
       const file = {
@@ -55,12 +56,12 @@ exports.insertProduct = async (req, res, next) => {
       };
       imagesArray.push(file);
     });
-    const { title, desc, images, categories, size, color, price } = req.body;
+    const { title, desc, images, category, size, color, price } = req.body;
     const productData = await Product.create({
       title,
       desc,
       images: imagesArray,
-      categories,
+      category,
       size,
       color,
       price,
@@ -81,18 +82,6 @@ exports.insertProduct = async (req, res, next) => {
     });
   }
 };
-const fileSizeFormatter = (bytes, decimal) => {
-  if (bytes === 0) {
-    return "0 Bytes";
-  }
-  const dm = decimal || 2;
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "YB", "ZB"];
-  const index = Math.floor(Math.log(bytes) / Math.log(1000));
-  return (
-    parseFloat((bytes / Math.pow(1000, index)).toFixed(dm)) + " " + sizes[index]
-  );
-};
-
 /**
  * @api {put} /api/products/:id Update a product
  * @apiName PutProduct
@@ -110,14 +99,14 @@ const fileSizeFormatter = (bytes, decimal) => {
  * @apiSuccessExample Success-Response:
  *       HTTP/1.1 200 OK
  *     {
- *       "title": "woments collections",
+ *       "title": "women collections",
  *       "desc": "description"
  *        "price":"5000"
  *        "categories":"objectId"
  *        "size":L
- *         "color":pink
+ *        "color":pink
  *     }
- * @apiUse categoryNotFoundError
+ 
  */
 
 exports.updateProduct = async (req, res) => {
@@ -127,39 +116,92 @@ exports.updateProduct = async (req, res) => {
       res.status(422).json({ errors: errors.array() });
       return;
     }
+
+    let imagesArray = [];
+    req.files.forEach((element) => {
+      const file = {
+        imageName: element.originalname,
+        imagePath: element.path,
+        imageType: element.mimetype,
+       fileSize: fileSizeFormatter(element.size, 2),
+      };
+      imagesArray.push(file);
+    });
+   
+    const { title, desc, images, category, size, color, price } = req.body;
     const updatedProduct = await Product.findByIdAndUpdate(
-      req.params.id,
+      { _id: req.params.id },
       {
-        $set: req.body,
-      },
-      { new: true }
+        $set: {
+          title,
+          desc,
+          images:imagesArray,
+          category,
+          size,
+          color,
+          price,
+        },
+      }
     );
     res.status(200).json({
-      message: "product updated successfully",
+      message: "Product updated successfully",
       data: updatedProduct,
     });
   } catch (err) {
     res.status(500).json(err);
   }
 };
-// get all products
+
 exports.AllProduct = async (req, res) => {
   try {
-    const { page, perpage, title, per } = req.query;
-    const options = {
-      page: parseInt(page, 10) || 1,
-      limit: parseInt(perpage, 10) || 10,
-      sort: { title: 1 },
-    };
-    const products = await Product.paginate(
-      { title: { $regex: new RegExp(title), $options: "i" } },
-      options
-    );
-    res.status(200).json({ products });
-  } catch (err) {
-    res.status(500).json(err);
+
+      const { limit = 10, page = 1, price, title , color,  lowPrice , highPrice ,category } = req.query
+      const sort ={}
+      let filter = {};
+
+      //search product by conditions 
+      if (title) {
+        filter["title"] = { $regex: title, $options: "i" };
+      }
+
+      if (color) {
+        filter["color"] = { $regex: color, $options: "i" };
+    }
+    if (category) {
+      filter = { category: category.split(',') }
   }
-};
+     if (price) {
+      filter["price"] = { $lte: parseInt(price)};
+  }
+      if (lowPrice, highPrice) {
+        filter["price"] = { $gte: parseInt(lowPrice), $lte: parseInt(highPrice) }
+      }
+    if(req.query.sortBy){
+      const str=req.query.sortBy.split(':')
+      sort[str[0]]=str[1]==='desc'?-1:1
+    }
+      const productList = await Product.find(filter)
+          .populate("category")
+           .sort(sort)
+          .limit(limit)
+          .skip(limit * (page - 1));
+
+      const totalItems = await Product.countDocuments(filter);
+      if (!productList) {
+          return res.status(404).json({
+              message:"product not found"
+          })
+      }
+       return res.status(200).json({
+          products: productList,
+          totalItems,
+      });
+  } catch (error) {
+      return res.status(500).json({
+          message: "error"
+      })
+  }
+}
 
 /**
  * @api {get} /Category/:id Get User information .
@@ -197,13 +239,13 @@ exports.AllProduct = async (req, res) => {
  *     }
  */
 
-exports.getOneData = async (req, res) => {
+exports.getProductById = async (req, res) => {
   try {
     const productGet = await Product.findById(req.params.id)
-      .populate("categories")
+      .populate("category" ,"categoryName  subCategories  categoryImages")
       .select("title desc images categories size color price slug");
     if (!productGet) {
-      return res.status(400).json({ error: "product not found" });
+      return res.status(400).json({ error: "Product not found" });
     }
     res.status(200).json(productGet);
   } catch (err) {
@@ -232,10 +274,10 @@ exports.deleteData = async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);
     if (!product) {
-      return res.status(400).json({ error: "product not found" });
+      return res.status(400).json({ error: "Product not found" });
     }
     res.status(200).json({
-      message: "product deleted ",
+      message: "Product deleted  sucessfully",
       data: product,
     });
   } catch (err) {

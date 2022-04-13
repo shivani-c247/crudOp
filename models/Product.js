@@ -1,20 +1,20 @@
 const mongoose = require("mongoose");
 var URLSlug = require("mongoose-slug-generator");
-const mongoosePaginate = require("mongoose-paginate");
+const mongoosePaginate = require("mongoose-paginate-v2");
 mongoose.plugin(URLSlug);
 const ProductSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, unique: true },
     desc: { type: String, required: true },
     images: [Object],
-    categories: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
+    category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
     size: { type: String, enum: ["m", "s", "XL", "L", "XXL"] },
     color: {
       type: String,
       enum: ["pink", "red", "yellow", "blue", "green"],
       required: true,
     },
-    price: { type: Number },
+    price: { type: Number ,min:0 },
     slug: { type: String, slug: "title", unique: true },
   },
   { timestamps: true }
