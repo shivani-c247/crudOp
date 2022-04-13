@@ -155,18 +155,19 @@ exports.updateProduct = async (req, res) => {
 exports.AllProduct = async (req, res) => {
   try {
 
-      const { limit = 10, page = 1, price, title , color,  lowPrice , highPrice ,category } = req.query
+      const { limit = 10, page = 1, price,size, title , color,  lowPrice , highPrice ,category } = req.query
       const sort ={}
       let filter = {};
-
       //search product by conditions 
       if (title) {
         filter["title"] = { $regex: title, $options: "i" };
       }
-
       if (color) {
         filter["color"] = { $regex: color, $options: "i" };
     }
+    if (size) {
+      filter["size"] = { $regex: size, $options: "i" };
+  }
     if (category) {
       filter = { category: category.split(',') }
   }
@@ -189,7 +190,7 @@ exports.AllProduct = async (req, res) => {
       const totalItems = await Product.countDocuments(filter);
       if (!productList) {
           return res.status(404).json({
-              message:"product not found"
+              message:"Product not found"
           })
       }
        return res.status(200).json({

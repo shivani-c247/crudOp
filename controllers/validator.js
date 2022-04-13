@@ -1,5 +1,6 @@
 const { body } = require("express-validator");
 const Category = require("../models/Category");
+const Product = require("../models/Category");
 //validation for insert category
 exports.validate = [
   body("categoryName")
@@ -20,16 +21,8 @@ exports.validate = [
 
 //validaton for  product
 exports.productvalidation = [
-  body("title")
-    .not()
-    .isEmpty()
-    .withMessage("Category title is required")
-    .custom(async (value) => {
-      const category = await Category.findOne({ title: value });
-      if (category) {
-        throw new Error("Category title is already taken");
-      }
-    }),
+ 
+  body("title").not().isEmpty().withMessage("title is required"),
   body("desc").not().isEmpty().withMessage("description is required"),
   body("size").not().isEmpty().withMessage("size is required"),
   body("color").not().isEmpty().withMessage("color is required"),
