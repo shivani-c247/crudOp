@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 var URLSlug = require("mongoose-slug-generator");
-const mongoosePaginate = require("mongoose-paginate-v2");
 mongoose.plugin(URLSlug);
 const ProductSchema = new mongoose.Schema(
   {
@@ -14,7 +13,7 @@ const ProductSchema = new mongoose.Schema(
       enum: ["pink", "red", "yellow", "blue", "green"],
       required: true,
     },
-    price: { type: Number ,min:0 },
+    price: { type: Number, min: 0 },
     slug: { type: String, slug: "title", unique: true },
   },
   { timestamps: true }
@@ -24,5 +23,5 @@ ProductSchema.pre("save", function (next) {
   this.slug = this.title.split(" ").join("-");
   next();
 });
-ProductSchema.plugin(mongoosePaginate);
+
 module.exports = mongoose.model("Product", ProductSchema);

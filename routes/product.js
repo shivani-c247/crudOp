@@ -15,7 +15,7 @@ router.put(
   validate.productvalidation,
   productController.updateProduct
 );
-router.get("/", productController.AllProduct);
+router.get("/", productController.allProduct);
 router.get("/:id", productController.getProductById);
 router.delete("/:id", productController.deleteData);
 module.exports = router;

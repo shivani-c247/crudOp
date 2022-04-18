@@ -115,7 +115,7 @@ exports.update = async (req, res) => {
     });
     const { categoryName, subCategories, categoryImages } = req.body;
     const updatedCartegory = await Category.findByIdAndUpdate(
-      { _id: req.params.id },
+       req.params.id ,
       {
         $set: {
           categoryName,
@@ -206,17 +206,12 @@ exports.getOne = async (req, res) => {
 
 exports.getAll = async (req, res) => {
   try {
-    const { limit = 10, page = 1, categoryName, subCategories } = req.query;
+    const { limit = 10, page = 1, categoryName } = req.query;
     const sort = {};
     let filter = {};
 
-    //search product by conditions
     if (categoryName) {
       filter["categoryName"] = { $regex: categoryName, $options: "i" };
-    }
-
-    if (subCategories) {
-      filter["subCategories"] = { $regex: subCategories, $options: "i" };
     }
 
     if (req.query.sortBy) {

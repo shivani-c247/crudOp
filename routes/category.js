@@ -11,7 +11,7 @@ router.post(
 );
 router.put(
   "/:id", upload.array("categoryImages"),
-  Validate.validate,
+  Validate.categoryUpdateValidation,
   categoryController.update
 );
 router.get("/", categoryController.getAll);

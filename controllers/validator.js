@@ -19,17 +19,29 @@ exports.validate = [
     .withMessage("subCategories is required"),
 ];
 
+exports.categoryUpdateValidation = [
+  body("categoryName").not().isEmpty().withMessage("Category name is required"),
+  body("subCategories")
+    .not()
+    .isEmpty()
+    .withMessage("subCategories is required"),
+];
+
 //validaton for  product
 exports.productvalidation = [
- 
   body("title").not().isEmpty().withMessage("title is required"),
   body("desc").not().isEmpty().withMessage("description is required"),
   body("size").not().isEmpty().withMessage("size is required"),
   body("color").not().isEmpty().withMessage("color is required"),
-  body("price").not().isEmpty().withMessage("price is required"),
+  body("price")
+    .not()
+    .isEmpty()
+    .withMessage("price is required")
+    .isNumeric()
+    .withMessage("Only Decimals allowed"),
 ];
 
-exports.Ordertvalidate = [
+exports.OrderValidation = [
   body("address.*.fullAddress")
     .not()
     .isEmpty()
@@ -40,12 +52,20 @@ exports.Ordertvalidate = [
     .isEmpty()
     .withMessage("pinCode is required")
     .isLength({ min: 6 })
-    .withMessage("min 6 no."),
+    .withMessage("min 6 no.")
+    .isNumeric()
+    .withMessage("Only Decimals allowed"),
   body("contactNo")
     .not()
     .isEmpty()
     .withMessage("contactNo is required")
+    .isMobilePhone()
     .isLength({ min: 10 })
     .withMessage(" min. length required 10"),
-  body("totalAmount").not().isEmpty().withMessage("totalAmount is required"),
+  body("totalAmount")
+    .not()
+    .isEmpty()
+    .withMessage("totalAmount is required")
+    .isNumeric()
+    .withMessage("Only Decimals allowed"),
 ];

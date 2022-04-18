@@ -3,6 +3,7 @@ const app = express();
 const mongoose = require("mongoose");
 const router =require("./routes/index")
 
+app.use(express.json())
 mongoose
   .connect("mongodb://localhost:27017/Crude", {
     useNewUrlParser: true,

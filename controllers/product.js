@@ -1,6 +1,8 @@
 const Product = require("../models/product");
+
 const { validationResult } = require("express-validator");
-const { fileSizeFormatter } = require("../utils/helper")
+const { fileSizeFormatter } = require("../utils/helper");
+const Category = require("../models/Category");
 //const Category = require("../models/Category");
 
 /**
@@ -45,7 +47,7 @@ exports.insertProduct = async (req, res, next) => {
     if (!errors.isEmpty()) {
       res.status(422).json({ errors: errors.array() });
       return;
-    } 
+    }
     let imagesArray = [];
     req.files.forEach((element) => {
       const file = {
@@ -123,26 +125,23 @@ exports.updateProduct = async (req, res) => {
         imageName: element.originalname,
         imagePath: element.path,
         imageType: element.mimetype,
-       fileSize: fileSizeFormatter(element.size, 2),
+        fileSize: fileSizeFormatter(element.size, 2),
       };
       imagesArray.push(file);
     });
-   
+
     const { title, desc, images, category, size, color, price } = req.body;
-    const updatedProduct = await Product.findByIdAndUpdate(
-      { _id: req.params.id },
-      {
-        $set: {
-          title,
-          desc,
-          images:imagesArray,
-          category,
-          size,
-          color,
-          price,
-        },
-      }
-    );
+    const updatedProduct = await Product.findByIdAndUpdate(req.params.id, {
+      $set: {
+        title,
+        desc,
+        images: imagesArray,
+        category,
+        size,
+        color,
+        price,
+      },
+    });
     res.status(200).json({
       message: "Product updated successfully",
       data: updatedProduct,
@@ -152,57 +151,82 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
-exports.AllProduct = async (req, res) => {
+exports.allProduct = async (req, res) => {
   try {
+    const {
+      limit = 10,
+      page = 1,
+      price,
+      size,
+      title,
+      color,
+      lowPrice,
+      highPrice,
+      category,
+      categoryName,
+      search,
+    } = req.query;
+    const sort = {};
+    let filter = {};
 
-      const { limit = 10, page = 1, price,size, title , color,  lowPrice , highPrice ,category } = req.query
-      const sort ={}
-      let filter = {};
-      //search product by conditions 
-      if (title) {
-        filter["title"] = { $regex: title, $options: "i" };
-      }
-      if (color) {
-        filter["color"] = { $regex: color, $options: "i" };
+    //filter["category.categoryName"]="electronic Items"
+
+    if (title) {
+      filter["title"] = { $regex: title, $options: "i" };
+    }
+    if (color) {
+      filter["color"] = { $regex: color, $options: "i" };
     }
     if (size) {
       filter["size"] = { $regex: size, $options: "i" };
-  }
-    if (category) {
-      filter = { category: category.split(',') }
-  }
-     if (price) {
-      filter["price"] = { $lte: parseInt(price)};
-  }
-      if (lowPrice, highPrice) {
-        filter["price"] = { $gte: parseInt(lowPrice), $lte: parseInt(highPrice) }
-      }
-    if(req.query.sortBy){
-      const str=req.query.sortBy.split(':')
-      sort[str[0]]=str[1]==='desc'?-1:1
     }
-      const productList = await Product.find(filter)
-          .populate("category")
-           .sort(sort)
-          .limit(limit)
-          .skip(limit * (page - 1));
+    if (category) {
+      filter = { category: category.split(",") };
+    }
+    if (price) {
+      filter["price"] = { $lte: parseInt(price) };
+    }
 
-      const totalItems = await Product.countDocuments(filter);
-      if (!productList) {
-          return res.status(404).json({
-              message:"Product not found"
-          })
-      }
-       return res.status(200).json({
-          products: productList,
-          totalItems,
-      });
-  } catch (error) {
-      return res.status(500).json({
-          message: "error"
+    if (color) {
+      filter["color"] = { $regex: color, $options: "i" };
+    }
+    if ((lowPrice, highPrice)) {
+      filter["price"] = { $gte: parseInt(lowPrice), $lte: parseInt(highPrice) };
+    }
+    if (req.query.sortBy) {
+      const str = req.query.sortBy.split(":");
+      sort[str[0]] = str[1] === "desc" ? -1 : 1;
+    }
+    const productList = await Product.find(filter)
+      .populate({
+        path: "category",
+        select: "categoryName",
+        match: {
+          categoryName: { $regex: new RegExp(categoryName, "i") },
+        },
       })
+      .sort(sort)
+      .limit(limit)
+      .skip(limit * (page - 1));
+    const totalItems = await Product.countDocuments(filter);
+    if (!productList) {
+      return res.status(404).json({
+        message: "Product not found",
+      });
+    }
+    //console.log(productList)
+    //console.log(totalItems);
+    console.log(filter, "filter", sort, "sort");
+    return res.status(200).json({
+      products: productList,
+      totalItems,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "error",
+    });
   }
-}
+};
 
 /**
  * @api {get} /Category/:id Get User information .
@@ -243,7 +267,7 @@ exports.AllProduct = async (req, res) => {
 exports.getProductById = async (req, res) => {
   try {
     const productGet = await Product.findById(req.params.id)
-      .populate("category" ,"categoryName  subCategories  categoryImages")
+      .populate("category", "categoryName  subCategories  categoryImages")
       .select("title desc images categories size color price slug");
     if (!productGet) {
       return res.status(400).json({ error: "Product not found" });

@@ -1,5 +1,7 @@
+//const Order = require("../models/Order");
 const Order = require("../models/Order");
 const { validationResult } = require("express-validator");
+
 exports.createOrder = async (req, res, next) => {
   try {
     const errors = validationResult(req);
@@ -22,7 +24,7 @@ exports.createOrder = async (req, res, next) => {
       orderStatus,
       type,
     } = req.body;
-    const cartData = await Order.create({
+    const order = await Order.create({
       address,
       fullAddress,
       city,
@@ -41,7 +43,7 @@ exports.createOrder = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       message: "Data saved successfully.",
-      data: cartData,
+      data: order,
     });
   } catch (error) {
     console.log(error);
@@ -67,6 +69,54 @@ exports.getOne = async (req, res) => {
     res.status(200).json({
       status: true,
       Order: order,
+    });
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
+exports.updateOrder = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(422).json({ errors: errors.array() });
+      return;
+    }
+    const {
+      address,
+      fullAddress,
+      city,
+      pinCode,
+      contactNo,
+      totalAmount,
+      items,
+      product,
+      purchasedQty,
+      paymentStatus,
+      paymentType,
+      orderStatus,
+      type,
+    } = req.body;
+    const updatedOrder = await Order.findByIdAndUpdate(req.params.id, {
+      $set: {
+        address,
+        fullAddress,
+        city,
+        pinCode,
+        contactNo,
+        totalAmount,
+        items,
+        product,
+        purchasedQty,
+        paymentStatus,
+        paymentType,
+        orderStatus,
+        type,
+      },
+    });
+    res.status(200).json({
+      message: "Oroduct updated successfully",
+      data: updatedOrder,
     });
   } catch (err) {
     res.status(500).json(err);

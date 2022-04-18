@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const orderSchema = new mongoose.Schema(
   {
     address: [
@@ -18,6 +17,7 @@ const orderSchema = new mongoose.Schema(
     contactNo: {
       type: Number,
       min: 10,
+      required:true
     },
     totalAmount: {
       type: Number,
