@@ -153,73 +153,99 @@ exports.updateProduct = async (req, res) => {
 
 exports.allProduct = async (req, res) => {
   try {
-    const {
-      limit = 10,
-      page = 1,
-      price,
-      size,
-      title,
-      color,
-      lowPrice,
-      highPrice,
-      category,
-      categoryName,
-      search,
-    } = req.query;
-    const sort = {};
-    let filter = {};
-
-    //filter["category.categoryName"]="electronic Items"
-
-    if (title) {
-      filter["title"] = { $regex: title, $options: "i" };
-    }
-    if (color) {
-      filter["color"] = { $regex: color, $options: "i" };
-    }
-    if (size) {
-      filter["size"] = { $regex: size, $options: "i" };
-    }
-    if (category) {
-      filter = { category: category.split(",") };
-    }
-    if (price) {
-      filter["price"] = { $lte: parseInt(price) };
-    }
-
-    if (color) {
-      filter["color"] = { $regex: color, $options: "i" };
-    }
-    if ((lowPrice, highPrice)) {
-      filter["price"] = { $gte: parseInt(lowPrice), $lte: parseInt(highPrice) };
-    }
-    if (req.query.sortBy) {
-      const str = req.query.sortBy.split(":");
-      sort[str[0]] = str[1] === "desc" ? -1 : 1;
-    }
-    const productList = await Product.find(filter)
-      .populate({
-        path: "category",
-        select: "categoryName",
-        match: {
-          categoryName: { $regex: new RegExp(categoryName, "i") },
+    const { color, price, size, lowPrice, highPrice } = req.query;
+    const query = [
+      {
+        $lookup: {
+          from: "categories",
+          localField: "category",
+          foreignField: "_id",
+          as: "category_deatails",
         },
-      })
-      .sort(sort)
-      .limit(limit)
-      .skip(limit * (page - 1));
-    const totalItems = await Product.countDocuments(filter);
-    if (!productList) {
-      return res.status(404).json({
-        message: "Product not found",
+      },
+      { $unwind: "$category_deatails" },
+    ];
+    query.push({
+      $project: {
+        title: 1,
+        desc: 1,
+        images: 1,
+        size: 1,
+        color: 1,
+        price: 1,
+        slug:1,
+        "category_deatails.categoryName": 1,
+        "category_deatails.subCategories":1,
+      },
+    });
+    if (req.query.keyword && req.query.keyword != "") {
+      query.push({
+        $match: {
+          $or: [
+            { title: { $regex: req.query.keyword } },
+            { "category_deatails.categoryName": { $regex: req.query.keyword } },
+          ],
+        },
       });
     }
-    //console.log(productList)
-    //console.log(totalItems);
-    console.log(filter, "filter", sort, "sort");
-    return res.status(200).json({
-      products: productList,
-      totalItems,
+
+    if (color) {
+      query.push({
+        $match: { color: { $regex: req.query.color } },
+      });
+    }
+    if (price) {
+      query.push({
+        $match: { price: { $lte: parseInt(price) } },
+      });
+    }
+    if (size) {
+      query.push({
+        $match: { size: { $regex: req.query.size } },
+      });
+    }
+    if ((lowPrice, highPrice)) {
+      query.push({
+        $match: {
+          price: { $gte: parseInt(lowPrice), $lte: parseInt(highPrice) },
+        },
+      });
+    }
+    const total = await Product.countDocuments(query);
+    const page = req.query.page ? parseInt(req.query.page) : 1;
+    const perPage = req.query.perPage ? parseInt(req.query.perPage) : 10;
+    const skip = (page - 1) * perPage;
+    query.push({
+      $skip: skip,
+    }),
+      query.push({
+        $limit: perPage,
+      });
+
+    if (req.query.sortBy && req.query.sortOrder) {
+      const sort = {};
+      sort[req.query.sortBy] = req.query.sortOrder == "desc" ? 1 : -1;
+      query.push({
+        $sort: sort,
+      });
+    } else {
+      query.push({
+        $sort: { createdAt: -1 },
+      });
+    }
+
+    const productItems = await Product.aggregate(query);
+    return res.send({
+      message: "Product Fetched successfully",
+      data: {
+        Products: productItems,
+        meta: {
+          total: total,
+          currentPage: page,
+          perPage: perPage,
+          totalPages: Math.ceil(total / perPage),
+        },
+      },
     });
   } catch (error) {
     return res.status(500).json({
