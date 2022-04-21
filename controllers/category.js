@@ -114,16 +114,13 @@ exports.update = async (req, res) => {
       imagesArray.push(file);
     });
     const { categoryName, subCategories, categoryImages } = req.body;
-    const updatedCartegory = await Category.findByIdAndUpdate(
-       req.params.id ,
-      {
-        $set: {
-          categoryName,
-          subCategories,
-          categoryImages: imagesArray,
-        },
-      }
-    );
+    const updatedCartegory = await Category.findByIdAndUpdate(req.params.id, {
+      $set: {
+        categoryName,
+        subCategories,
+        categoryImages: imagesArray,
+      },
+    });
     if (!updatedCartegory) {
       return res.status(400).json({ error: "category not found" });
     }
@@ -206,7 +203,7 @@ exports.getOne = async (req, res) => {
 
 exports.getAll = async (req, res) => {
   try {
-    const { limit = 10, page = 1, categoryName } = req.query;
+    const { limit = 10, page = 1, categoryName, sortBy } = req.query;
     const sort = {};
     let filter = {};
 
@@ -214,8 +211,8 @@ exports.getAll = async (req, res) => {
       filter["categoryName"] = { $regex: categoryName, $options: "i" };
     }
 
-    if (req.query.sortBy) {
-      const str = req.query.sortBy.split(":");
+    if (sortBy) {
+      const str = sortBy.split(":");
       sort[str[0]] = str[1] === "desc" ? -1 : 1;
     }
 
@@ -233,6 +230,8 @@ exports.getAll = async (req, res) => {
     return res.status(200).json({
       categories: categoryList,
       totalItems,
+      privious: page - 1,
+      totalPages: Math.ceil(totalItems / limit),
     });
   } catch (error) {
     return res.status(500).json({

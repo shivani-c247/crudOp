@@ -45,6 +45,7 @@ const orderSchema = new mongoose.Schema(
       enum: ["cod", "card"],
       required: true,
     },
+   
     orderStatus: [
       {
         type: {

@@ -42,7 +42,7 @@ exports.createOrder = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      message: "Data saved successfully.",
+      message: "Order Placed successfully.",
       data: order,
     });
   } catch (error) {
@@ -122,3 +122,69 @@ exports.updateOrder = async (req, res) => {
     res.status(500).json(err);
   }
 };
+
+
+
+
+
+
+exports.allProduct = async (req, res) => {
+  try {
+    const query = [
+      {
+        $lookup: {
+          from: "products",
+          localField: "product",
+          foreignField: "_id",
+          as: "product_deatails",
+        },
+      },
+      { $unwind: "$product_deatails" },
+    ];
+  
+
+    
+  
+    const total = await Product.countDocuments(query);
+    const page = req.query.page ? parseInt(req.query.page) : 1;
+    const perPage = req.query.perPage ? parseInt(req.query.perPage) : 10;
+    const skip = (page - 1) * perPage;
+    query.push({
+      $skip: skip,
+    }),
+      query.push({
+        $limit: perPage,
+      });
+
+    if (req.query.sortBy && req.query.sortOrder) {
+      const sort = {};
+      sort[req.query.sortBy] = req.query.sortOrder == "desc" ? 1 : -1;
+      query.push({
+        $sort: sort,
+      });
+    } else {
+      query.push({
+        $sort: { createdAt: -1 },
+      });
+    }
+
+    const productItems = await Product.aggregate(query);
+    return res.send({
+      message: "Product Fetched successfully",
+      data: {
+        Products: productItems,
+        meta: {
+          total: total,
+          currentPage: page,
+          perPage: perPage,
+          totalPages: Math.ceil(total / perPage),
+        },
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "error",
+    });
+  }
+};
+

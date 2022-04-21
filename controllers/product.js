@@ -153,17 +153,26 @@ exports.updateProduct = async (req, res) => {
 
 exports.allProduct = async (req, res) => {
   try {
-    const { color, price, size, lowPrice, highPrice } = req.query;
+    const {
+      color,
+      price,
+      size,
+      lowPrice,
+      highPrice,
+      keyword,
+      sortBy,
+      sortOrder,
+    } = req.query;
     const query = [
       {
         $lookup: {
           from: "categories",
           localField: "category",
           foreignField: "_id",
-          as: "category_deatails",
+          as: "category_details",
         },
       },
-      { $unwind: "$category_deatails" },
+      { $unwind: "$category_details" },
     ];
     query.push({
       $project: {
@@ -173,22 +182,22 @@ exports.allProduct = async (req, res) => {
         size: 1,
         color: 1,
         price: 1,
-        slug:1,
-        "category_deatails.categoryName": 1,
-        "category_deatails.subCategories":1,
+        slug: 1,
+        createdAt: 1,
+        "category_details.categoryName": 1,
+        "category_details.subCategories": 1,
       },
     });
-    if (req.query.keyword && req.query.keyword != "") {
+    if (keyword && keyword != "") {
       query.push({
         $match: {
           $or: [
             { title: { $regex: req.query.keyword } },
-            { "category_deatails.categoryName": { $regex: req.query.keyword } },
+            { "category_details.categoryName": { $regex: req.query.keyword } },
           ],
         },
       });
     }
-
     if (color) {
       query.push({
         $match: { color: { $regex: req.query.color } },
@@ -222,9 +231,9 @@ exports.allProduct = async (req, res) => {
         $limit: perPage,
       });
 
-    if (req.query.sortBy && req.query.sortOrder) {
+    if (sortBy && sortOrder) {
       const sort = {};
-      sort[req.query.sortBy] = req.query.sortOrder == "desc" ? 1 : -1;
+      sort[sortBy] = sortOrder == "desc" ? 1 : -1;
       query.push({
         $sort: sort,
       });
@@ -233,16 +242,27 @@ exports.allProduct = async (req, res) => {
         $sort: { createdAt: -1 },
       });
     }
-
     const productItems = await Product.aggregate(query);
+    const counts = await Product.aggregate(
+      query,
+      query.push({
+        $count: "TotalProducts",
+        /*
+        $group: { _id: '$null', totalProducts: { $sum: 1 } } 
+      */
+      })
+    );
+
     return res.send({
       message: "Product Fetched successfully",
-      data: {
+      productDetails: {
         Products: productItems,
         meta: {
-          total: total,
+          // TotalProducts_available: total,
+          totalProducts: counts,
           currentPage: page,
           perPage: perPage,
+          previous: page - 1,
           totalPages: Math.ceil(total / perPage),
         },
       },
