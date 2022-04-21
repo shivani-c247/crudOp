@@ -25,13 +25,13 @@ exports.addToCart = async (req, res, next) => {
   }
 };
 
-exports.getOne = async (req, res) => {
+exports.getCart = async (req, res) => {
   try {
     const cart = await Cart.findById(req.params.id)
       .select("products")
       .populate(
         "productItems",
-        "title desc images categories size color price"
+        "title desc images category size color price"
       );
     if (!cart) {
       return res.status(400).json({ error: " Cart is Empty...... " });
