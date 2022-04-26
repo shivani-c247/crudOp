@@ -57,6 +57,10 @@ const orderSchema = new mongoose.Schema(
         type: Boolean,
         default: false,
       },
+      paymentId:{
+        type:String,
+        default: "not present",
+      }
     },
   },
   { timestamps: true }

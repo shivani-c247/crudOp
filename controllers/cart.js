@@ -28,25 +28,17 @@ exports.addToCart = async (req, res, next) => {
 
 exports.getCart = async (req, res) => {
   try {
-    const { id } = req.params;
-    const productData = await Product.countDocuments(id);
-    if (!productData) {
-      res.status(400).json("cart is Empty");
-    } else {
-      const cart = await Cart.findById(req.params.id).populate(
-        "productItems",
-        "title desc images category size color "
-      );
-      /*
- const quantity = req.body.quantity
-  const price = req.body.price*/
-      res.status(200).json({
-        status: true,
-        Carts: cart,
-        //quantity:quantity,
-        //totalPrice:price * quantity
-      });
+    const cart = await Cart.findById(req.params.id).populate(
+      "productItems",
+      "title desc images category size color "
+    );
+    if (!cart) {
+      return res.status(400).json({ error: " Cart is empty..... " });
     }
+    res.status(200).json({
+      status: true,
+      Carts: cart,
+    });
   } catch (err) {
     res.status(500).json(err);
   }
@@ -59,7 +51,7 @@ exports.RemoveCart = async (req, res) => {
       return res.status(400).json({ error: " Cart not found...... " });
     }
     res.status(200).json({
-      message: "cart deleted successfullt",
+      message: "cart removed successfullt",
       Carts: cart,
     });
   } catch (err) {

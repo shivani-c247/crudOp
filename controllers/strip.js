@@ -1,3 +1,4 @@
+//const Order =require("../models/Order")
 const express = require("express");
 const Razorpay = require("razorpay");
 const razorpayInstance = new Razorpay({
@@ -5,16 +6,18 @@ const razorpayInstance = new Razorpay({
   key_secret: "ss4bgnyOFiQv1Wlf84iPyxuG",
 });
 
-exports.strip = (req, res) => {
-  const { amount, currency, receipt, notes } = req.body;
+exports.strip = async(req, res) => {
+  const { orderId,amount, currency, receipt, notes } = req.body;
   razorpayInstance.orders.create(
-    { amount, currency, receipt, notes },
+    { orderId, amount, currency, receipt, notes },
     (err, order) => {
       if (!err) res.json(order);
       else res.send(err);
     }
   );
 };
+
+
 /*
 
 //var Publishable_Key = 'pk_test_51KdV0ESHWdVpZknsNqNiKkWBDQU01JRKrPqWCh3zcuAbFZNublep0u8q7XJxS8CXxr1g80ZNJrqqqkUcOFWZBj0i000incBhXT'

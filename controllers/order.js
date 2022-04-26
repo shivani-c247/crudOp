@@ -58,10 +58,10 @@ exports.getOne = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
       .select(
-        "address contactNo  totalAmount paymentStatus paymentType orderStatus"
+        "address contactNo  paymentStatus paymentType orderStatus"
       )
-      .populate("items.product", "title desc images category size color")
-      .populate("cartDetails", "quantity price total");
+      .populate("items.product")
+      .populate("cartDetails");
     if (!order) {
       return res.status(400).json({ error: " Order not found...... " });
     }
