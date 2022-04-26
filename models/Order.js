@@ -17,10 +17,6 @@ const orderSchema = new mongoose.Schema(
     contactNo: {
       type: Number,
       min: 10,
-      required:true
-    },
-    totalAmount: {
-      type: Number,
       required: true,
     },
     items: [
@@ -29,40 +25,39 @@ const orderSchema = new mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           ref: "Product",
         },
-        purchasedQty: {
-          type: Number,
-          required: true,
-        },
       },
     ],
+    cartDetails: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Cart",
+    },
     paymentStatus: {
       type: String,
       enum: ["pending", "completed", "cancelled", "refund"],
       required: true,
+      default: "pending",
     },
     paymentType: {
       type: String,
       enum: ["cod", "card"],
       required: true,
     },
-   
-    orderStatus: [
-      {
-        type: {
-          type: String,
-          enum: ["ordered", "packed", "shipped", "delivered"],
-          default: "ordered",
-        },
-        date: {
-          type: Date,
-          default: Date.now,
-        },
-        isCompleted: {
-          type: Boolean,
-          default: false,
-        },
+
+    orderStatus: {
+      type: {
+        type: String,
+        enum: ["ordered", "packed", "shipped", "delivered"],
+        default: "ordered",
       },
-    ],
+      date: {
+        type: Date,
+        default: Date.now,
+      },
+      isCompleted: {
+        type: Boolean,
+        default: false,
+      },
+    },
   },
   { timestamps: true }
 );

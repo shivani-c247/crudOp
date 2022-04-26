@@ -277,7 +277,7 @@ exports.getAll = async (req, res) => {
 exports.delete = async (req, res) => {
   try {
     const { id } = req.params;
-    const productData = await Product.countDocuments({ categories: id });
+    const productData = await Product.countDocuments({ category: id });
     if (productData) {
       res
         .status(400)

@@ -15,10 +15,9 @@ exports.createOrder = async (req, res, next) => {
       city,
       pinCode,
       contactNo,
-      totalAmount,
       items,
+      cartDetails,
       product,
-      purchasedQty,
       paymentStatus,
       paymentType,
       orderStatus,
@@ -30,10 +29,9 @@ exports.createOrder = async (req, res, next) => {
       city,
       pinCode,
       contactNo,
-      totalAmount,
       items,
+      cartDetails,
       product,
-      purchasedQty,
       paymentStatus,
       paymentType,
       orderStatus,
@@ -62,7 +60,8 @@ exports.getOne = async (req, res) => {
       .select(
         "address contactNo  totalAmount paymentStatus paymentType orderStatus"
       )
-      .populate("items.product");
+      .populate("items.product", "title desc images category size color")
+      .populate("cartDetails", "quantity price total");
     if (!order) {
       return res.status(400).json({ error: " Order not found...... " });
     }
@@ -88,10 +87,9 @@ exports.updateOrder = async (req, res) => {
       city,
       pinCode,
       contactNo,
-      totalAmount,
       items,
+      cartDetails,
       product,
-      purchasedQty,
       paymentStatus,
       paymentType,
       orderStatus,
@@ -104,10 +102,9 @@ exports.updateOrder = async (req, res) => {
         city,
         pinCode,
         contactNo,
-        totalAmount,
         items,
+        cartDetails,
         product,
-        purchasedQty,
         paymentStatus,
         paymentType,
         orderStatus,
@@ -115,17 +112,13 @@ exports.updateOrder = async (req, res) => {
       },
     });
     res.status(200).json({
-      message: "Oroduct updated successfully",
+      message: "Order updated successfully",
       data: updatedOrder,
     });
   } catch (err) {
     res.status(500).json(err);
   }
 };
-
-
-
-
 
 /*
 exports.allProduct = async (req, res) => {
@@ -190,12 +183,9 @@ exports.allProduct = async (req, res) => {
 
 */
 
-exports.allProduct = async (req, res) => {
+exports.allOrders = async (req, res) => {
   try {
-    const {
-      limit = 10,
-      page = 1,
-    } = req.query;
+    const { limit = 10, page = 1 } = req.query;
     const sort = {};
     let filter = {};
 
@@ -204,7 +194,9 @@ exports.allProduct = async (req, res) => {
       sort[str[0]] = str[1] === "desc" ? -1 : 1;
     }
     const orderList = await Order.find(filter)
-    .populate("items.product")
+      .populate("cartDetails")
+      .populate("items.product")
+
       .sort(sort)
       .limit(limit)
       .skip(limit * (page - 1));
@@ -214,10 +206,10 @@ exports.allProduct = async (req, res) => {
         message: "Order not found",
       });
     }
-    
+
     console.log(filter, "filter", sort, "sort");
     return res.status(200).json({
-      products: orderList,
+      OrderList: orderList,
       totalItems,
       privious: page - 1,
       totalPages: Math.ceil(totalItems / limit),

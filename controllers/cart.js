@@ -1,12 +1,13 @@
 const Cart = require("../models/Cart");
-
+const Product = require("../models/product");
 exports.addToCart = async (req, res, next) => {
   try {
-    const { productItems, products, deliveryCharge } = req.body;
+    const { productItems, quantity, price, total } = req.body;
     const cartData = await Cart.create({
       productItems,
-      products,
-      deliveryCharge,
+      quantity,
+      price,
+      total: price * quantity,
     });
 
     return res.status(200).json({
@@ -27,19 +28,25 @@ exports.addToCart = async (req, res, next) => {
 
 exports.getCart = async (req, res) => {
   try {
-    const cart = await Cart.findById(req.params.id)
-      .select("products")
-      .populate(
+    const { id } = req.params;
+    const productData = await Product.countDocuments(id);
+    if (!productData) {
+      res.status(400).json("cart is Empty");
+    } else {
+      const cart = await Cart.findById(req.params.id).populate(
         "productItems",
-        "title desc images category size color price"
+        "title desc images category size color "
       );
-    if (!cart) {
-      return res.status(400).json({ error: " Cart is Empty...... " });
+      /*
+ const quantity = req.body.quantity
+  const price = req.body.price*/
+      res.status(200).json({
+        status: true,
+        Carts: cart,
+        //quantity:quantity,
+        //totalPrice:price * quantity
+      });
     }
-    res.status(200).json({
-      status: true,
-      Carts: cart,
-    });
   } catch (err) {
     res.status(500).json(err);
   }
