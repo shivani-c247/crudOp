@@ -110,7 +110,6 @@ exports.insertProduct = async (req, res, next) => {
  *     }
  
  */
-
 exports.updateProduct = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -118,32 +117,45 @@ exports.updateProduct = async (req, res) => {
       res.status(422).json({ errors: errors.array() });
       return;
     }
+    const { title, desc, category, size, color, price } = req.body;
+    let payload = {
+      title,
+      desc,
+      category,
+      size,
+      color,
+      price,
+    };
 
-    let imagesArray = [];
-    req.files.forEach((element) => {
-      const file = {
-        imageName: element.originalname,
-        imagePath: element.path,
-        imageType: element.mimetype,
-        fileSize: fileSizeFormatter(element.size, 2),
-      };
-      imagesArray.push(file);
-    });
+    if (req.files.length) {
+      let imagesArray = [];
+      req.files.forEach((element) => {
+        const file = {
+          imageName: element.originalname,
+          imagePath: element.path,
+          imageType: element.mimetype,
+          fileSize: fileSizeFormatter(element.size, 2),
+        };
+        imagesArray.push(file);
+      });
 
-    const { title, desc, images, category, size, color, price } = req.body;
-    const updatedProduct = await Product.findByIdAndUpdate(req.params.id, {
-      $set: {
-        title,
-        desc,
-        images: imagesArray,
-        category,
-        size,
-        color,
-        price,
+      payload.images = imagesArray;
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: payload,
       },
-    });
+      { new: true }
+    );
+    console.log(updatedProduct);
+    if (!updatedProduct) {
+      return res.status(400).json({ error: "Product not found" });
+    }
+    //console.log(updatedCartegory)
     res.status(200).json({
-      message: "Product updated successfully",
+      message: "Product updated succesfully",
       data: updatedProduct,
     });
   } catch (err) {

@@ -102,28 +102,39 @@ exports.update = async (req, res) => {
       res.status(422).json({ errors: errors.array() });
       return;
     }
+    const { categoryName, subCategories } = req.body;
+    let payload = {
+      categoryName,
+      subCategories,
+    };
 
-    let imagesArray = [];
-    req.files.forEach((element) => {
-      const file = {
-        imageName: element.originalname,
-        imagePath: element.path,
-        imageType: element.mimetype,
-        fileSize: fileSizeFormatter(element.size, 2),
-      };
-      imagesArray.push(file);
-    });
-    const { categoryName, subCategories, categoryImages } = req.body;
-    const updatedCartegory = await Category.findByIdAndUpdate(req.params.id, {
-      $set: {
-        categoryName,
-        subCategories,
-        categoryImages: imagesArray,
+    if (req.files.length) {
+      let imagesArray = [];
+      req.files.forEach((element) => {
+        const file = {
+          imageName: element.originalname,
+          imagePath: element.path,
+          imageType: element.mimetype,
+          fileSize: fileSizeFormatter(element.size, 2),
+        };
+        imagesArray.push(file);
+      });
+
+      payload.categoryImages = imagesArray;
+    }
+
+    const updatedCartegory = await Category.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: payload,
       },
-    });
+      { new: true }
+    );
+    console.log(updatedCartegory);
     if (!updatedCartegory) {
       return res.status(400).json({ error: "category not found" });
     }
+    //console.log(updatedCartegory)
     res.status(200).json({
       message: "category updated succesfully",
       data: updatedCartegory,
