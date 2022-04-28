@@ -14,7 +14,7 @@ exports.ragister = async (req, res, next) => {
     }
     const { username, email, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
-    const categoryData = await User.create({
+    const userData = await User.create({
       username,
       email,
       password: hashedPassword,
@@ -23,7 +23,7 @@ exports.ragister = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       message: "Data saved successfully.",
-      data: categoryData,
+      data: userData,
     });
   } catch (error) {
     console.log(error);

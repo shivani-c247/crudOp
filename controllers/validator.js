@@ -40,9 +40,9 @@ exports.productvalidation = [
     .isNumeric()
     .withMessage("Only Decimals allowed"),
 ];
-
+/*
 exports.OrderValidation = [
-  body("address.*.fullAddress")
+  /*body("address.*.fullAddress")
     .not()
     .isEmpty()
     .withMessage(" fullAddress is required.."),
@@ -62,10 +62,11 @@ exports.OrderValidation = [
     .isMobilePhone()
     .isLength({ min: 10 })
     .withMessage(" min. length required 10"),
-/*  body("totalAmount")
+  body("totalAmount")
     .not()
     .isEmpty()
     .withMessage("totalAmount is required")
     .isNumeric()
-    .withMessage("Only Decimals allowed"),*/
-];
+    .withMessage("Only Decimals allowed"),
+]*/
+

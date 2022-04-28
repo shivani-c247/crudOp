@@ -1,23 +1,9 @@
 const mongoose = require("mongoose");
 const orderSchema = new mongoose.Schema(
   {
-    address: [
-      {
-        fullAddress: {
-          type: String,
-        },
-        city: {
-          type: String,
-        },
-        pinCode: {
-          type: Number,
-        },
-      },
-    ],
-    contactNo: {
-      type: Number,
-      min: 10,
-      required: true,
+    address:{
+      type: mongoose.Schema.Types.ObjectId,
+          ref: "Address",
     },
     items: [
       {

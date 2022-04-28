@@ -11,10 +11,6 @@ exports.createOrder = async (req, res, next) => {
     }
     const {
       address,
-      fullAddress,
-      city,
-      pinCode,
-      contactNo,
       items,
       cartDetails,
       product,
@@ -25,10 +21,6 @@ exports.createOrder = async (req, res, next) => {
     } = req.body;
     const order = await Order.create({
       address,
-      fullAddress,
-      city,
-      pinCode,
-      contactNo,
       items,
       cartDetails,
       product,
@@ -58,8 +50,9 @@ exports.getOne = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
       .select(
-        "address contactNo  paymentStatus paymentType orderStatus"
+        "address  paymentStatus paymentType orderStatus"
       )
+      .populate("address")
       .populate("items.product")
       .populate("cartDetails");
     if (!order) {
@@ -83,10 +76,6 @@ exports.updateOrder = async (req, res) => {
     }
     const {
       address,
-      fullAddress,
-      city,
-      pinCode,
-      contactNo,
       items,
       cartDetails,
       product,
@@ -98,10 +87,6 @@ exports.updateOrder = async (req, res) => {
     const updatedOrder = await Order.findByIdAndUpdate(req.params.id, {
       $set: {
         address,
-        fullAddress,
-        city,
-        pinCode,
-        contactNo,
         items,
         cartDetails,
         product,
@@ -120,69 +105,6 @@ exports.updateOrder = async (req, res) => {
   }
 };
 
-/*
-exports.allProduct = async (req, res) => {
-  try {
-    const query = [
-      {
-        $lookup: {
-          from: "products",
-          localField: "product",
-          foreignField: "_id",
-          as: "product_deatails",
-        },
-      },
-      { $unwind: "$product_deatails" },
-    ];
-  
-
-    
-  
-    const total = await Order.countDocuments(query);
-    const page = req.query.page ? parseInt(req.query.page) : 1;
-    const perPage = req.query.perPage ? parseInt(req.query.perPage) : 10;
-    const skip = (page - 1) * perPage;
-    query.push({
-      $skip: skip,
-    }),
-      query.push({
-        $limit: perPage,
-      });
-
-    if (req.query.sortBy && req.query.sortOrder) {
-      const sort = {};
-      sort[req.query.sortBy] = req.query.sortOrder == "desc" ? 1 : -1;
-      query.push({
-        $sort: sort,
-      });
-    } else {
-      query.push({
-        $sort: { createdAt: -1 },
-      });
-    }
-
-    const productItems = await Order.aggregate(query);
-    return res.send({
-      message: "Product Fetched successfully",
-      data: {
-        Products: productItems,
-        meta: {
-          total: total,
-          currentPage: page,
-          perPage: perPage,
-          totalPages: Math.ceil(total / perPage),
-        },
-      },
-    });
-  } catch (error) {
-    return res.status(500).json({
-      message: "error",
-    });
-  }
-};
-
-*/
-
 exports.allOrders = async (req, res) => {
   try {
     const { limit = 10, page = 1 } = req.query;
@@ -196,7 +118,6 @@ exports.allOrders = async (req, res) => {
     const orderList = await Order.find(filter)
       .populate("cartDetails")
       .populate("items.product")
-
       .sort(sort)
       .limit(limit)
       .skip(limit * (page - 1));
