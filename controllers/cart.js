@@ -1,9 +1,10 @@
 const Cart = require("../models/Cart");
-const Product = require("../models/product");
+var ObjectId = require("mongodb").ObjectId;
 exports.addToCart = async (req, res, next) => {
   try {
-    const { productItems, quantity, price, total } = req.body;
+    const { userId, productItems, quantity, price } = req.body;
     const cartData = await Cart.create({
+      userId,
       productItems,
       quantity,
       price,
@@ -32,9 +33,7 @@ exports.getCart = async (req, res) => {
       "productItems",
       "title desc images category size color "
     );
-    if (!cart) {
-      return res.status(400).json({ error: " Cart is empty..... " });
-    }
+
     res.status(200).json({
       status: true,
       Carts: cart,
@@ -44,17 +43,19 @@ exports.getCart = async (req, res) => {
   }
 };
 
-exports.RemoveCart = async (req, res) => {
+exports.removeCart = async (req, res) => {
   try {
-    const cart = await Cart.findByIdAndDelete(req.params.id);
-    if (!cart) {
-      return res.status(400).json({ error: " Cart not found...... " });
-    }
+    const { userId } = req.body;
+    const objId = new ObjectId(userId);
+    console.log(objId);
+    const cart = await Cart.findOneAndDelete({ userId: objId });
+    console.log(cart);
     res.status(200).json({
       message: "cart removed successfullt",
       Carts: cart,
     });
   } catch (err) {
+    console.log(err);
     res.status(500).json(err);
   }
 };
