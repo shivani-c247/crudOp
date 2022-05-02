@@ -2,11 +2,11 @@
 const Order = require("../models/Order");
 const { validationResult } = require("express-validator");
 
+
 exports.createOrder = async (req, res, next) => {
   try {
     const {
       user,
-      address,
       items,
       cartDetails,
       product,
@@ -16,8 +16,7 @@ exports.createOrder = async (req, res, next) => {
       type,
     } = req.body;
     const order = await Order.create({
-      user,
-      address,
+      user, 
       items,
       cartDetails,
       product,
@@ -47,9 +46,9 @@ exports.getOne = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
       .select("address  paymentStatus paymentType orderStatus")
-      .populate("address")
+     
       .populate("items.product")
-      .populate("cartDetails", "price quantity total");
+      .populate("cartDetails");
     if (!order) {
       return res.status(400).json({ error: " Order not found...... " });
     }
@@ -71,7 +70,7 @@ exports.updateOrder = async (req, res) => {
     }
     const {
       user,
-      address,
+     
       items,
       cartDetails,
       product,
@@ -83,7 +82,7 @@ exports.updateOrder = async (req, res) => {
     const updatedOrder = await Order.findByIdAndUpdate(req.params.id, {
       $set: {
         user,
-        address,
+        
         items,
         cartDetails,
         product,
@@ -129,12 +128,12 @@ exports.allOrders = async (req, res) => {
     return res.status(200).json({
       OrderList: orderList,
       totalItems,
-      privious: page - 1,
+      previous: page - 1,
       totalPages: Math.ceil(totalItems / limit),
     });
   } catch (error) {
     return res.status(500).json({
-      message: "Somthing went wrong",
+      message: "Something went wrong",
     });
   }
 };

@@ -79,16 +79,19 @@ exports.addToCart = async (req, res) => {
                 cartItems: {
                   ...cartItems,
                   quantity: productQuantity + cartItems.quantity,
+                 
                 },
               },
+              
             },
             { new: true }
           );
           // console.log("line 2")
           console.log("updateExistProduct");
           return res.status(200).json({
-            message: " quantity of product updated sucessfully",
+            message: " quantity of product updated successfully",
             cart: updateExistProduct,
+           
           });
         } else {
           //if product not exist in user cart
@@ -98,14 +101,14 @@ exports.addToCart = async (req, res) => {
             { new: true }
           );
           return res.status(200).json({
-            message: "products added succefully",
+            message: "products added successfully",
             cart: updateExistCart,
           });
         }
       } catch (error) {
         console.log(error);
         return res.status(500).json({
-          message: "somthing went Wrong",
+          message: "something Wrong",
         });
       }
     } else {
@@ -113,10 +116,11 @@ exports.addToCart = async (req, res) => {
       const cartItem = await Cart.create({
         user: user,
         cartItems: [cartItems],
+        total:total
       });
       return res.status(200).json({
         message: "new product added successfully",
-        additem: cartItem,
+        addItem: cartItem,
       });
     }
   } catch (error) {

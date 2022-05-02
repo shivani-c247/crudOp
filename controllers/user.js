@@ -12,12 +12,14 @@ exports.register = async (req, res, next) => {
       res.status(422).json({ errors: errors.array() });
       return;
     }
-    const { username, email, password } = req.body;
+    const { username, email, password ,address,contactNo} = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
     const userData = await User.create({
       username,
       email,
       password: hashedPassword,
+      address,
+      contactNo
     });
 
     return res.status(200).json({
@@ -37,6 +39,11 @@ exports.register = async (req, res, next) => {
 };
 
 exports.login = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(422).json({ errors: errors.array() });
+    return;
+  }
   const { email, password } = req.body;
   const user = await User.findOne({ email });
   if (!user) {
@@ -57,5 +64,5 @@ exports.login = async (req, res) => {
     expiresIn: "2h",
   });
 
-  return res.status(200).json({ message: "login succussfull", token: token });
+  return res.status(200).json({ message: "login successfully", token: token });
 };

@@ -1,7 +1,7 @@
 const User = require("../models/user");
 const { body } = require("express-validator");
 
-exports.uservalidation = [
+exports.userValidation = [
   body("username")
     .not()
     .isEmpty()
@@ -31,7 +31,7 @@ exports.uservalidation = [
     .isString()
     .isLength({ min: 8 })
     .not()
-    .withMessage(" length should be 8 charecters")
+    .withMessage(" length should be 8 characters")
     .isLowercase()
     .not()
     .withMessage(" one lower case is required")
@@ -43,11 +43,7 @@ exports.uservalidation = [
     .withMessage(" one numeric is required")
     .isAlpha()
     .withMessage(" paa not match"),
-];
-
-
-exports.addressValidation = [
-  body("address.*.fullAddress")
+    body("address.*.fullAddress")
     .not()
     .isEmpty()
     .withMessage(" fullAddress is required.."),
@@ -56,7 +52,7 @@ exports.addressValidation = [
     .not()
     .isEmpty()
     .withMessage("pinCode is required")
-    .isLength({ min: 6 })
+    .isLength({ min: 6, max:6 })
     .withMessage("min 6 no.")
     .isNumeric()
     .withMessage("Only Decimals allowed"),
@@ -68,3 +64,17 @@ exports.addressValidation = [
     .isLength({ min: 10 ,max:10 })
     .withMessage(" min. length required 10"),
 ];
+
+
+exports.loginValidation =[
+  body("email")
+  .not()
+  .isEmpty()
+  .withMessage("email is required")
+  .isEmail()
+  .withMessage("Invalid Email"),
+  body("password")
+    .not()
+    .isEmpty()
+    .withMessage("password is required")
+]
