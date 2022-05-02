@@ -4,7 +4,7 @@ const categoryRoute = require("./category");
 const cartRoute = require("./cart");
 const orderRoute = require("./order");
 const ragiRoute = require("./user");
-const stripRoute = require("./strip");
+const stripRoute = require("./stripe");
 const addressRoute = require("./address");
 const router = Router();
 

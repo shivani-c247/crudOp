@@ -1,7 +1,12 @@
 const Address = require("../models/address");
-
+const { validationResult } = require("express-validator");
 exports.address = async (req, res, next) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(422).json({ errors: errors.array() });
+      return;
+    }
     const { address, fullAddress, city, pinCode, contactNo } = req.body;
     const categoryData = await Address.create({
       address,

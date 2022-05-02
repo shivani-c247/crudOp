@@ -5,7 +5,7 @@ const { validationResult } = require("express-validator");
 const dotenv = require("dotenv");
 dotenv.config();
 
-exports.ragister = async (req, res, next) => {
+exports.register = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -48,16 +48,14 @@ exports.login = async (req, res) => {
   const isPasswordCorrect = await bcrypt.compare(password, user.password);
   if (!isPasswordCorrect) {
     return res.status(422).json({
-      errors: { message: " password not match " },
+      errors: { message:"password not match"},
     });
   }
-  if (!email) {
-    res.status(200).json({ message: "error" });
-  }
+
   // generate JWT token code
   const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
     expiresIn: "2h",
   });
 
-  return res.status(200).json({ message: "login succ", token: token });
+  return res.status(200).json({ message: "login succussfull", token: token });
 };

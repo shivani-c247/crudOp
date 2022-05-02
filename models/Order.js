@@ -1,9 +1,13 @@
 const mongoose = require("mongoose");
 const orderSchema = new mongoose.Schema(
   {
-    address:{
+    user: {
       type: mongoose.Schema.Types.ObjectId,
-          ref: "Address",
+      ref: "User",
+    },
+    address: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Address",
     },
     items: [
       {
@@ -43,10 +47,10 @@ const orderSchema = new mongoose.Schema(
         type: Boolean,
         default: false,
       },
-      paymentId:{
-        type:String,
+      paymentId: {
+        type: String,
         default: "not present",
-      }
+      },
     },
   },
   { timestamps: true }

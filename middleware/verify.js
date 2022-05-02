@@ -9,14 +9,15 @@ exports.uservalidation = [
     .custom(async (value) => {
       const userCheck = await User.findOne({ username: value });
       if (userCheck) {
-        throw new Error("username is already taken");
+        throw new Error("username is already exist");
       }
     }),
   body("email")
     .not()
     .isEmpty()
-    .isEmail()
     .withMessage("email is required")
+    .isEmail()
+    .withMessage("Invalid Email")
     .custom(async (value) => {
       const emailCheck = await User.findOne({ email: value });
       if (emailCheck) {
@@ -40,5 +41,30 @@ exports.uservalidation = [
     .isNumeric()
     .not()
     .withMessage(" one numeric is required")
-    .isAlpha(),
+    .isAlpha()
+    .withMessage(" paa not match"),
+];
+
+
+exports.addressValidation = [
+  body("address.*.fullAddress")
+    .not()
+    .isEmpty()
+    .withMessage(" fullAddress is required.."),
+  body("address.*.city").not().isEmpty().withMessage("city is required"),
+  body("address.*.pinCode")
+    .not()
+    .isEmpty()
+    .withMessage("pinCode is required")
+    .isLength({ min: 6 })
+    .withMessage("min 6 no.")
+    .isNumeric()
+    .withMessage("Only Decimals allowed"),
+  body("contactNo")
+    .not()
+    .isEmpty()
+    .withMessage("contactNo is required")
+    .isMobilePhone()
+    .isLength({ min: 10 ,max:10 })
+    .withMessage(" min. length required 10"),
 ];

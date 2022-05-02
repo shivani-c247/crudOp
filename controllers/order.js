@@ -4,12 +4,8 @@ const { validationResult } = require("express-validator");
 
 exports.createOrder = async (req, res, next) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(422).json({ errors: errors.array() });
-      return;
-    }
     const {
+      user,
       address,
       items,
       cartDetails,
@@ -20,6 +16,7 @@ exports.createOrder = async (req, res, next) => {
       type,
     } = req.body;
     const order = await Order.create({
+      user,
       address,
       items,
       cartDetails,
@@ -49,12 +46,10 @@ exports.createOrder = async (req, res, next) => {
 exports.getOne = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
-      .select(
-        "address  paymentStatus paymentType orderStatus"
-      )
+      .select("address  paymentStatus paymentType orderStatus")
       .populate("address")
       .populate("items.product")
-      .populate("cartDetails");
+      .populate("cartDetails", "price quantity total");
     if (!order) {
       return res.status(400).json({ error: " Order not found...... " });
     }
@@ -75,6 +70,7 @@ exports.updateOrder = async (req, res) => {
       return;
     }
     const {
+      user,
       address,
       items,
       cartDetails,
@@ -86,6 +82,7 @@ exports.updateOrder = async (req, res) => {
     } = req.body;
     const updatedOrder = await Order.findByIdAndUpdate(req.params.id, {
       $set: {
+        user,
         address,
         items,
         cartDetails,

@@ -6,7 +6,7 @@ const razorpayInstance = new Razorpay({
   key_secret: "ss4bgnyOFiQv1Wlf84iPyxuG",
 });
 
-exports.strip = async(req, res) => {
+exports.stripe = async(req, res) => {
   const { orderId,amount, currency, receipt, notes } = req.body;
   razorpayInstance.orders.create(
     { orderId, amount, currency, receipt, notes },
