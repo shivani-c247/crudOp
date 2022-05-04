@@ -1,58 +1,34 @@
-//const Order =require("../models/Order")
-const express = require("express");
-const Razorpay = require("razorpay");
-const razorpayInstance = new Razorpay({
-  key_id: "rzp_test_RPTQ05k20cV4Z4",
-  key_secret: "ss4bgnyOFiQv1Wlf84iPyxuG",
-});
+ const dotenv = require("dotenv");
+dotenv.config();
+const Stripe_Key= process.env.STRIPE_KEY;
+const stripe = require("stripe")(Stripe_Key);
 
-exports.stripe = async(req, res) => {
-  const { orderId,amount, currency, receipt, notes } = req.body;
-  razorpayInstance.orders.create(
-    { orderId, amount, currency, receipt, notes },
-    (err, order) => {
-      if (!err) res.json(order);
-      else res.send(err);
-    }
-  );
+exports.createCharges = async function (req, res, next) {
+  try {
+    const customer = await stripe.customers.create({
+      email: req.body.email,
+    });
+    let paymentMethod = await stripe.paymentMethods.create({
+      type: "card",
+      card: {
+        number: req.body.number,
+        exp_month: req.body.exp_month,
+        exp_year: req.body.exp_year,
+        cvc: req.body.cvc,
+      },
+    });
+    paymentIntent = await stripe.paymentIntents.create({
+      payment_method: paymentMethod.id,
+      customer: customer.id,
+      amount: req.body.amount,
+      currency: "inr",
+      confirm: true,
+      payment_method_types: ["card"],
+    });
+
+    res.send(paymentIntent);
+  } catch (err) {
+    console.log(err);
+    throw new Error(error);
+  }
 };
-
-
-/*
-
-//var Publishable_Key = 'pk_test_51KdV0ESHWdVpZknsNqNiKkWBDQU01JRKrPqWCh3zcuAbFZNublep0u8q7XJxS8CXxr1g80ZNJrqqqkUcOFWZBj0i000incBhXT'
-  var Secret_Key = 'sk_test_51KdV0ESHWdVpZknsGGg0Lj7Jm0rFvXoFVQ2rRZ238TjpuQuFiAV8Mm732KdOY036W2HCWLIp660Q75vXXn8Umjtz00U9Yx6Ekw'
-  const stripe = require('stripe')(Secret_Key)
-    
-  
-exports.strip  = function(req, res){
-  
-    stripe.customers.create({
-      email: req.body.stripeEmail,
-      source: req.body.stripeToken,
-      name: 'shivani',
-      address: {
-          line1: 'indore',
-          postal_code: '452001',
-          city: 'Indore',
-          state: 'Madhya Pradesh',
-          country: 'India',
-      }
-  })
-  .then((customer) => {
-
-      return stripe.charges.create({
-          amount: 2500,     // Charing Rs 25
-          description: 'Web Development Product',
-          currency: 'INR',
-          customer: customer.id
-      });
-  })
-  .then((charge) => {
-      res.send("Success")  // If no error occurs
-  })
-  .catch((err) => {
-      res.send(err)       // If some error occurs
-  });
-}
-*/

@@ -1,44 +1,15 @@
 const Cart = require("../models/Cart");
 var ObjectId = require("mongodb").ObjectId;
-//const User=require("../models/user")
 const User = require("../models/user");
 const bcryptjs = require("bcryptjs");
 
-/*
-exports.addToCart = async (req, res, next) => {
-  try {
-    const { userId, productItems, quantity, price } = req.body;
-    const cartData = await Cart.create({
-      userId,
-      productItems,
-      quantity,
-      price,
-      total: price * quantity,
-    });
-
-    return res.status(200).json({
-      success: true,
-      message: "Data saved successfully.",
-      data: cartData,
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      success: false,
-      message:
-        "We are having some error while completing your request. Please try again after some time.",
-      error: error,
-    });
-  }
-};
-*/
 exports.getCart = async (req, res) => {
   try {
     const cart = await Cart.findOne(req.params.user)
     .populate("cartItems")
 
     res.status(200).json({
-      status: true,
+      Status: true,
       Carts: cart,
     });
   } catch (err) {
@@ -53,7 +24,7 @@ exports.addToCart = async (req, res) => {
     const { cartItems, user } = req.body;
     const userId = await User.findById(user);
     if (!userId) {
-      return res.status(200).json({
+      return res.status(422).json({
         message: "user not exist",
       });
     }
@@ -97,7 +68,7 @@ exports.addToCart = async (req, res) => {
           //if product not exist in user cart
           const updateExistCart = await Cart.findOneAndUpdate(
             { user: userId.id },
-            { $push: { cartItems: cartItems } },
+            { $push: {  cartItems } },
             { new: true }
           );
           return res.status(200).json({
@@ -114,9 +85,8 @@ exports.addToCart = async (req, res) => {
     } else {
       // if user cart not available
       const cartItem = await Cart.create({
-        user: user,
+        user,
         cartItems: [cartItems],
-        total:total
       });
       return res.status(200).json({
         message: "new product added successfully",
@@ -133,10 +103,10 @@ exports.addToCart = async (req, res) => {
 
 exports.removeCart = async (req, res) => {
   try {
-    const { productId } = req.body;
-    const objId = new ObjectId(productId);
+    const { userId } = req.body;
+    const objId = new ObjectId(userId);
     //console.log(objId);
-    const cart = await Cart.findOneAndDelete({ productId: objId });
+    const cart = await Cart.findOneAndDelete({ userId: objId });
     console.log(cart);
     res.status(200).json({
       message: "cart removed successfully",
