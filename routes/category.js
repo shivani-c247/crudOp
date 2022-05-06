@@ -6,12 +6,12 @@ const { upload } = require("../helpers/helper");
 router.post(
   "/",
   upload.array("categoryImages"),
-  Validate.validate("insertCategory"),
+  Validate.validate,
   categoryController.insertCategory
 );
 router.put(
-  "/:id",
-  Validate.updateValidate("insertCategory"),
+  "/:id", upload.array("categoryImages"),
+  Validate.categoryUpdateValidation,
   categoryController.update
 );
 router.get("/", categoryController.getAll);
