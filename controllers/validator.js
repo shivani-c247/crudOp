@@ -44,9 +44,9 @@ exports.productvalidation = [
 
 exports.cartValidation = [
   body("number",'pleas enter valid cart').isCreditCard(),
-  body("exp_month",'exp_month is empty').isInt({min:1,max:12}),
+  body("exp_month",'exp_month is empty').isInt({min:1,max:12}).withMessage("fill valid month"),
   body("exp_year",'exp year is empty').isLength({min:1}),
-  body("cvc",'cvc is empty').isLength({min:3}),
+  body("cvc",'cvc is empty').isLength({min:3 , max:3}).withMessage("contains only 3 digits"),
 ];
 
 
