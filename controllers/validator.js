@@ -40,6 +40,17 @@ exports.productvalidation = [
     .isNumeric()
     .withMessage("Only Decimals allowed"),
 ];
+
+
+exports.cartValidation = [
+  body("number",'pleas enter valid cart').isCreditCard(),
+  body("exp_month",'exp_month is empty').isInt({min:1,max:12}),
+  body("exp_year",'exp year is empty').isLength({min:1}),
+  body("cvc",'cvc is empty').isLength({min:3}),
+];
+
+
+
 /*
 exports.OrderValidation = [
   /*body("address.*.fullAddress")
