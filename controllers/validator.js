@@ -41,7 +41,7 @@ exports.productvalidation = [
     .withMessage("Only Decimals allowed"),
 ];
 
-
+/*
 exports.cartValidation = [
   body("number",'pleas enter valid cart').isCreditCard(),
   body("exp_month",'exp_month is empty').isInt({min:1,max:12}).withMessage("fill valid month"),
@@ -49,35 +49,4 @@ exports.cartValidation = [
   body("cvc",'cvc is empty').isLength({min:3 , max:3}).withMessage("contains only 3 digits"),
 ];
 
-
-
-/*
-exports.OrderValidation = [
-  /*body("address.*.fullAddress")
-    .not()
-    .isEmpty()
-    .withMessage(" fullAddress is required.."),
-  body("address.*.city").not().isEmpty().withMessage("city is required"),
-  body("address.*.pinCode")
-    .not()
-    .isEmpty()
-    .withMessage("pinCode is required")
-    .isLength({ min: 6 })
-    .withMessage("min 6 no.")
-    .isNumeric()
-    .withMessage("Only Decimals allowed"),
-  body("contactNo")
-    .not()
-    .isEmpty()
-    .withMessage("contactNo is required")
-    .isMobilePhone()
-    .isLength({ min: 10 })
-    .withMessage(" min. length required 10"),
-  body("totalAmount")
-    .not()
-    .isEmpty()
-    .withMessage("totalAmount is required")
-    .isNumeric()
-    .withMessage("Only Decimals allowed"),
-]*/
-
+*/
