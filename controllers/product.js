@@ -174,6 +174,9 @@ exports.allProduct = async (req, res) => {
       keyword,
       sortBy,
       sortOrder,
+      Date,
+      start,
+      end
     } = req.query;
     const query = [
       {
@@ -232,6 +235,15 @@ exports.allProduct = async (req, res) => {
         },
       });
     }
+    if ((start,end)) {
+      query.push({
+        $match: {
+          Date: { $gte: ISODate("2022-05-05"), $lte: ISODate("2022-05-24") },
+          //Date: { $gte: new Date(start).toISOString(), $lte: new Date(end).toISOString() },
+        },
+      });
+    }
+
     const total = await Product.countDocuments(query);
     const page = req.query.page ? parseInt(req.query.page) : 1;
     const perPage = req.query.perPage ? parseInt(req.query.perPage) : 10;
@@ -280,7 +292,9 @@ exports.allProduct = async (req, res) => {
       },
     });
   } catch (error) {
+    console.log(error)
     return res.status(500).json({
+      
       message: "error",
     });
   }

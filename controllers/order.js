@@ -7,23 +7,13 @@ exports.createOrder = async (req, res, next) => {
   try {
     const {
       user,
-      items,
       cartDetails,
-      product,
-      paymentStatus,
       paymentType,
-      orderStatus,
-      type,
     } = req.body;
     const order = await Order.create({
       user, 
-      items,
       cartDetails,
-      product,
-      paymentStatus,
       paymentType,
-      orderStatus,
-      type,
     });
 
     return res.status(200).json({
@@ -46,8 +36,6 @@ exports.getOne = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
       .select("address  paymentStatus paymentType orderStatus")
-     
-      .populate("items.product")
       .populate("cartDetails");
     if (!order) {
       return res.status(400).json({ error: " Order not found...... " });
@@ -70,10 +58,7 @@ exports.updateOrder = async (req, res) => {
     }
     const {
       user,
-     
-      items,
       cartDetails,
-      product,
       paymentStatus,
       paymentType,
       orderStatus,
@@ -82,10 +67,7 @@ exports.updateOrder = async (req, res) => {
     const updatedOrder = await Order.findByIdAndUpdate(req.params.id, {
       $set: {
         user,
-        
-        items,
         cartDetails,
-        product,
         paymentStatus,
         paymentType,
         orderStatus,
@@ -113,21 +95,21 @@ exports.allOrders = async (req, res) => {
     }
     const orderList = await Order.find(filter)
       .populate("cartDetails")
-      .populate("items.product")
       .sort(sort)
       .limit(limit)
       .skip(limit * (page - 1));
     const totalItems = await Order.countDocuments(filter);
     if (!orderList) {
       return res.status(404).json({
-        message: "Order not found",
+        message: "No order placed by you",
       });
     }
 
     console.log(filter, "filter", sort, "sort");
     return res.status(200).json({
-      OrderList: orderList,
+      orderList,
       totalItems,
+      currentPage:page,
       previous: page - 1,
       totalPages: Math.ceil(totalItems / limit),
     });

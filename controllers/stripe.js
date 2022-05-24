@@ -5,8 +5,7 @@ const Stripe_Key = process.env.STRIPE_KEY;
 const stripe = require("stripe")(Stripe_Key);
 const { validationResult } = require("express-validator");
 var nodemailer = require("nodemailer");
-
-exports.createCharges = async (req, res) => {
+exports.createPaymentIntent = async (req, res) => {
   try {
     // Create the PaymentIntent
     const { email, number, exp_month, exp_year, cvc, amount, cartDetails } =
@@ -34,11 +33,17 @@ exports.createCharges = async (req, res) => {
         cartDetails: cartDetails,
       },
     });
+    const webhookEndpoint = await stripe.webhookEndpoints.create({
+      url: "https://example.com/my/webhook/endpoint",
+      enabled_events: ["charge.failed", "charge.succeeded"],
+    });
+
     const order = new Order({
       paymentType: "card",
       cartDetails: cartDetails,
     });
     order.save();
+    console.log(webhookEndpoint);
     console.log(intent);
     res.status(200).send(generateResponse(intent));
   } catch (e) {
@@ -61,6 +66,33 @@ const generateResponse = (intent) => {
     };
   }
 };
+
+/*
+
+exports.hooks = bodyparser.raw({type:'application/json'}),async(req, res) => {
+  const payload = req.body
+  const sig = req.headers['stripe-signature']
+  const endpointsecret = "whsec_5e22689f970d256207f4d61374dfcdf7785bd2be0e172b4a037b974abcf4ac8c";
+  let event;
+
+  try {
+
+      event = stripe.webhooks.constructEvent(payload,sig,endpointsecret)
+      
+  } catch (error) {
+      console.log(error.message)
+      res.status(400).json({ success: false })
+      return;
+  }
+  console.log(event.type)
+  console.log(event.data.object)
+  console.log(event.data.object.id)
+  res.json({
+   success:true
+  })
+}
+
+*/
 
 /*
 
