@@ -1,8 +1,7 @@
 const Category = require("../models/Category");
 const { validationResult } = require("express-validator");
-//const product =require("../models/Product");
-const { upload } = require("../helpers/helper");
 const Product = require("../models/product");
+const { fileSizeFormatter } = require("../utils/helper");
 /**
  * @api {get} api/category/ create a  Category
  * @apiName GetCategory
@@ -76,18 +75,6 @@ exports.insertCategory = async (req, res, next) => {
   }
 };
 
-const fileSizeFormatter = (bytes, decimal) => {
-  if (bytes === 0) {
-    return "0 Bytes";
-  }
-  const dm = decimal || 2;
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "YB", "ZB"];
-  const index = Math.floor(Math.log(bytes) / Math.log(1000));
-  return (
-    parseFloat((bytes / Math.pow(1000, index)).toFixed(dm)) + " " + sizes[index]
-  );
-};
-
 /**
  * @api {put} /api/category/:id Update a category
  * @apiName PutCategory
@@ -115,16 +102,39 @@ exports.update = async (req, res) => {
       res.status(422).json({ errors: errors.array() });
       return;
     }
+    const { categoryName, subCategories } = req.body;
+    let payload = {
+      categoryName,
+      subCategories,
+    };
+
+    if (req.files.length) {
+      let imagesArray = [];
+      req.files.forEach((element) => {
+        const file = {
+          imageName: element.originalname,
+          imagePath: element.path,
+          imageType: element.mimetype,
+          fileSize: fileSizeFormatter(element.size, 2),
+        };
+        imagesArray.push(file);
+      });
+
+      payload.categoryImages = imagesArray;
+    }
+
     const updatedCartegory = await Category.findByIdAndUpdate(
       req.params.id,
       {
-        $set: req.body,
+        $set: payload,
       },
       { new: true }
     );
+    console.log(updatedCartegory);
     if (!updatedCartegory) {
       return res.status(400).json({ error: "category not found" });
     }
+    //console.log(updatedCartegory)
     res.status(200).json({
       message: "category updated succesfully",
       data: updatedCartegory,
@@ -201,21 +211,43 @@ exports.getOne = async (req, res) => {
  *       "error": categoryNameNotFound"
  *     }
  */
+
 exports.getAll = async (req, res) => {
   try {
-    const { page, perpage, categoryName } = req.query;
-    const options = {
-      page: parseInt(page, 10) || 1,
-      limit: parseInt(perpage, 10) || 10,
-      sort: { categoryName: 1 },
-    };
-    const category = await Category.paginate(
-      { categoryName: { $regex: new RegExp(categoryName), $options: "i" } },
-      options
-    );
-    res.status(200).json({ category });
-  } catch (err) {
-    res.status(500).json(err);
+    const { limit = 10, page = 1, categoryName, sortBy } = req.query;
+    const sort = {};
+    let filter = {};
+
+    if (categoryName) {
+      filter["categoryName"] = { $regex: categoryName, $options: "i" };
+    }
+
+    if (sortBy) {
+      const str = sortBy.split(":");
+      sort[str[0]] = str[1] === "desc" ? -1 : 1;
+    }
+
+    const categoryList = await Category.find(filter)
+      .sort(sort)
+      .limit(limit)
+      .skip(limit * (page - 1));
+
+    const totalItems = await Category.countDocuments(filter);
+    if (!categoryList) {
+      return res.status(404).json({
+        message: "category not found",
+      });
+    }
+    return res.status(200).json({
+      categories: categoryList,
+      totalItems,
+      privious: page - 1,
+      totalPages: Math.ceil(totalItems / limit),
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "error",
+    });
   }
 };
 
@@ -245,9 +277,13 @@ exports.getAll = async (req, res) => {
 exports.delete = async (req, res) => {
   try {
     const { id } = req.params;
-    const productData = await Product.countDocuments({ categories: id });
-    if (productData > 0) {
-      res.status(400).json("not able to delete, category already present");
+    const productData = await Product.countDocuments({ category: id });
+    if (productData) {
+      res
+        .status(400)
+        .json(
+          "we can't delete category because some products are already associate with it"
+        );
     } else {
       const category = await Category.findByIdAndDelete(req.params.id);
       res.status(200).json({

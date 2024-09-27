@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 var URLSlug = require("mongoose-slug-generator");
 mongoose.plugin(URLSlug);
-const mongoosePaginate = require("mongoose-paginate");
 
 const categorySchema = new mongoose.Schema(
   {
@@ -19,5 +18,4 @@ categorySchema.pre("save", function (next) {
   this.slug = this.categoryName.split(" ").join("-");
   next();
 });
-categorySchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("Category", categorySchema);

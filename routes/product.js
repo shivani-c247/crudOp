@@ -1,22 +1,21 @@
 const express = require("express");
 const { upload } = require("../helpers/helper");
 const productController = require("../controllers/product");
-const Validate = require("../controllers/validator");
+const validate = require("../controllers/validator");
 
 const router = express.Router();
-
 router.post(
   "/",
   upload.array("images"),
-  Validate.Productvalidate("insertProduct"),
+  validate.productvalidation,
   productController.insertProduct
 );
 router.put(
-  "/:id",
-  Validate.ProductUpdatevalidate("insertProduct"),
+  "/:id",upload.array("images"),
+  validate.productvalidation,
   productController.updateProduct
 );
-router.get("/", productController.AllProduct);
-router.get("/:id", productController.getOneData);
+router.get("/", productController.allProduct);
+router.get("/:id", productController.getProductById);
 router.delete("/:id", productController.deleteData);
 module.exports = router;
